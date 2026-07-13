@@ -42,6 +42,12 @@ The review found a bug class the mutation gate is structurally blind to. The arm
 - Lockout catches the ringing edge. Verified, mutation removing the lockout fires 2 MACs on the ringing test.
 - Phase randomization is sub cycle, so edge count assertions hold. Verified, both suites green with the Timer offset on every strobe.
 
+## Vault infrastructure, 2026-07-13
+
+The vault itself is under git now, remote github.com/Arnav66692/chip-design-track-vault, private. code/ is ignored there, mac8 stays its own repo and pushes independently, verified. Session end sync includes a vault commit and push. Git is the history layer under the homes, not a new home.
+
+Manual disappearance investigation, closed. Mechanism confirmed, the original v2 inode is gone, the restored file's birth time is 15:16. Both Trash locations empty, no Spotlight remnant, no third copy on disk. The Claude-Project-System folder is intact minus exactly the one file deleted on record after a byte identity check, so the wrong path theory fails. Window, 12:52 to 15:16. Cause unknown, and the git layer makes recurrence a one checkout recovery.
+
 ## Finding, v2 manual was missing from disk
 
 At F8 the vault OPERATING_MANUAL.md, the v2, was gone. Only OPERATING_MANUAL_v1.md remained, the original 34694 byte Fable 5 handoff. My conversation memory said v2 was written and edited, disk said otherwise, and the manual says trust the disk. The CLAUDE.md pointers to v2 were dangling. Cause unknown, the explanation and iCloud tasks in between did not touch it. Since the F8 instruction presupposes the manual exists, I restored v2 faithfully from the authoring conversation, with the two prior audit fixes and the F8 line, and noted the restore in its changelog. If a process is silently removing vault files, that is the real risk, flagged for Arnav.
@@ -66,6 +72,8 @@ At F8 the vault OPERATING_MANUAL.md, the v2, was gone. Only OPERATING_MANUAL_v1.
 
 - Reset arming by arm bit, ruling from Arnav. All flops still clear on reset.
 - Guard uses $fatal not $error, so an overlap actually fails a run.
+- Lockout stays as built, 4 clocks via a 2 bit counter plus a run flag. Ratified, the 2 bit counter clause was a cost estimate, not a requirement.
+- Vault spec copy renamed to MAC8 Spec.md, version neutral, the version lives inside the file. Zero hand maintained references needed fixing, verified by sweep.
 
 ## Dead ends
 

@@ -29,6 +29,7 @@ Int8 serial MAC for Tiny Tapeout. docs/SPEC.md is frozen v0.1 and it is law. Liv
 - accept is combinational off ff2 and ff3, gated by armed. A registered accept breaks the 2 to 3 clock contract.
 - After reset the first command needs strobe observed low, then a fresh rise.
 - CLR wins on overlapped pulses, and the datapath guard $fatals on any overlap.
+- Edge lockout, accepts ignored 4 clocks after any accept, built as a 2 bit counter plus a run flag. Ratified as built, the review's 2 bit counter clause was a cost estimate, not a requirement.
 - cmd and ui_in cross clock domains unsynchronized. The spec driver rules make them quasi static at sampling.
 - out_byte lags by one clock by design, uo_out is registered.
 
