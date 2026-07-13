@@ -18,7 +18,33 @@ Design and verify the int8 MAC block, then pass the P1 gates. Acceptance for the
 
 ## Now
 
-Build phase is done and green. Explain phase study material is written, the Notion Explanation page, app.notion.com/p/39c5d2c456c0814fa3fdeae1384a2806, a child of the build log. Next working session is the waveform walk with Surfer on tb/mac8_top.vcd, then the FAQ drills and the closed book replication gate. Arnav drives which.
+Implementing the design review gate list, F2 through F5 plus test upgrades. F1, the Tiny Tapeout integration, is its own task this week.
+
+## Reasoned event, 2026-07-13, F2 is review driven not test driven
+
+The review found a bug class the mutation gate is structurally blind to. The arm enable in mac8_sync reads ff1, the first synchronizer flop, which can go metastable. Only ff2 and later may feed logic. But Icarus does not model metastability, so no simulation can distinguish ff1 from ff2 in the arm enable, and no mutation can be made to fail. The fix is correct by review and by the synchronizer discipline, not by a passing test. The RTL comment says exactly this. This is the one gate tonight that the test suite cannot prove, and that is the point of naming it here.
+
+## Plan state, review batch, all done
+
+- [x] F2. Arm off ff2 not ff1, reset skip deepened to 2 cycles. Both suites green, arming lands one cycle later, no test expectation shifted. Commit 78240fb.
+- [x] F3. Edge multiplicity lockout, 4 clocks after any accept, 2 bit counter plus a run flag. Ringing test one MAC, mutation off the lockout gives two. Commit 78240fb.
+- [x] F4. Sub cycle phase randomization in command(), seed 20260713 logged, offset rounded to 0.1 ns for sim precision. Both suites green off the clock grid. Commit 46d4c49.
+- [x] F5. Spec v0.2 frozen, both copies identical, read rule, reset rule, 50 MHz clock. Commit 11dddb0.
+- [x] F6. Calendar swapped, review gate windows in the calendar and Home table.
+- [x] F7. White box markers on every test and helper that reads internal hierarchy. Commit 964bf1e.
+- [x] F8. Manual reporting line, reports lead with findings. Commit 7e5b8e3 for the index. Manual restored, see the finding below.
+
+## Verified facts, review batch
+
+- Both suites green after every unit. 9 datapath, 13 protocol, verified by make.
+- Empirical min strobe low time for the first post reset arm is 1 clock hard floor, 3 clocks safe. Verified by a low time sweep, k=0 gives 0 accepts, k>=1 gives 1.
+- Arming off ff2 adds no shift to any test expectation. Verified, the three reset tests and the latency and busy tests all pass unchanged.
+- Lockout catches the ringing edge. Verified, mutation removing the lockout fires 2 MACs on the ringing test.
+- Phase randomization is sub cycle, so edge count assertions hold. Verified, both suites green with the Timer offset on every strobe.
+
+## Finding, v2 manual was missing from disk
+
+At F8 the vault OPERATING_MANUAL.md, the v2, was gone. Only OPERATING_MANUAL_v1.md remained, the original 34694 byte Fable 5 handoff. My conversation memory said v2 was written and edited, disk said otherwise, and the manual says trust the disk. The CLAUDE.md pointers to v2 were dangling. Cause unknown, the explanation and iCloud tasks in between did not touch it. Since the F8 instruction presupposes the manual exists, I restored v2 faithfully from the authoring conversation, with the two prior audit fixes and the F8 line, and noted the restore in its changelog. If a process is silently removing vault files, that is the real risk, flagged for Arnav.
 
 ## Plan state
 
