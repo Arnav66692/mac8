@@ -1,11 +1,13 @@
 ---
 tags: [chip-track, spec]
 project: P1
-version: "0.1"
+version: "0.2"
 status: frozen
 ---
 
-# MAC8 Interface Spec v0.1
+# MAC8 Interface Spec v0.2
+
+Changelog. 2026-07-13, v0.2 frozen, clarifications only, no feature changes. Three additions. A SEL read rule. A reset strobe low rule with the measured arm time. The nominal clock.
 
 One page. This is the contract the RTL, the testbench, and the Tiny Tapeout integration all build against. Approving it freezes the interface. Changing it later costs a rebuild of all three.
 
@@ -15,7 +17,7 @@ A serial signed multiply accumulate unit. 8 bit signed times 8 bit signed, accum
 
 ## Signals from the Tiny Tapeout harness
 
-clk, the core clock. rst_n, active low reset, deassert treated as synchronous. ena, high when this design is selected, ignored internally in v0.1. ui_in[7:0], dedicated inputs. uo_out[7:0], dedicated outputs. uio[7:0], bidirectional with direction set statically by the design.
+clk, the core clock, 50 MHz nominal on the Tiny Tapeout harness. rst_n, active low reset, deassert treated as synchronous. ena, high when this design is selected, ignored internally in v0.1. ui_in[7:0], dedicated inputs. uo_out[7:0], dedicated outputs. uio[7:0], bidirectional with direction set statically by the design.
 
 ## Pin map
 
@@ -57,11 +59,19 @@ Driver rules:
 2. Hold strobe high at least 3 core clocks. Hold it low at least 2 before the next rise.
 3. Hold ui_in and uio[2:0] stable the whole time strobe is high and for 2 clocks after it falls.
 
-Commands arriving while busy is high are ignored. At demo board speeds, an MCU toggling GPIO, these numbers are trivially met.
+Commands arriving while busy is high are ignored. A ringing or slow strobe edge that crosses the threshold twice fires only once. The design ignores further accepts for 4 clocks after any accept, and the minimum legal rise to rise spacing is 5 clocks, so a compliant driver never loses a command. At demo board speeds, an MCU toggling GPIO, these numbers are trivially met.
+
+## Read rule
+
+After a SEL command, sample uo_out no earlier than 4 clocks after the strobe rise. That is 3 clocks for the sync path plus 1 for the registered output.
 
 ## Reset state
 
 acc 0. Overflow flag 0. Busy 0. Output select LO. uo_out 0.
+
+## Reset rule
+
+Hold strobe low across reset release. The first command after reset requires strobe observed low, then a fresh rise. Hold strobe low at least 3 clocks after release before that first rise. The arm settles on the third post reset clock. The measured hard floor is 1 clock, and a rise at release itself is read as strobe high across reset and dropped.
 
 ## Timing
 
@@ -76,10 +86,10 @@ CLR once. Per element, LDA x_i, then LDB w_i, then MAC. After the last element, 
 1. Saturation, not wrapping.
 2. Sticky overflow flag, cleared only by CLR.
 3. One serial multiplier, no parallelism.
-4. LDB and MAC stay separate commands. A fused LDB_MAC saves one cycle per element and can be v0.2 if tile area allows.
+4. LDB and MAC stay separate commands. A fused LDB_MAC saves one cycle per element and is queued in SPEC_NOTES.md for a future feature version, not v0.2.
 
 ## Approval
 
-Approved and frozen 2026-07-13. Changes from here are a version bump.
+Approved and frozen at v0.1 on 2026-07-13. v0.2 clarifications frozen 2026-07-13, no feature changes, wording only. Changes from here are a version bump.
 
 Links. [[P1 MAC RTL Block]], [[00 Chip Track Home]]
