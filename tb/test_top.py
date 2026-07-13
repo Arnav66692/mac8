@@ -515,3 +515,58 @@ async def test_in_flight_cancel(dut):
     uo, _, ovf, _, _ = pin_fields(dut)
     assert uo == 0, f"acc not 0 after a post reset MAC, uo_out {uo:#04x}"
     assert ovf == 0, "ovf set after a clean post reset MAC"
+
+
+# F3 lockout test, through the pins. WHITE BOX, reads u_sync.accept to count
+# fires, since no clean pin reports a fire. The stimulus is pins only.
+
+
+async def count_accepts_span(dut, uio_high, uio_low, edges):
+    """Drive uio_high for the span, sample accept on each of edges falling
+    edges, return the total accepts seen. Used to count across a ring."""
+    dut.uio_in.value = uio_high if uio_high is not None else uio_low
+    n = 0
+    for _ in range(edges):
+        await FallingEdge(dut.clk)
+        n += int(dut.u_sync.accept.value)
+    return n
+
+
+@cocotb.test()
+async def test_ringing_edge_lockout(dut):
+    """A ringing strobe, high 2 low 2 high 3, makes two synchronized rising
+    edges from one physical strobe. The lockout must let exactly one MAC
+    execute. acc changes once, and the next legal command is clean."""
+    await start_and_reset(dut)
+    golden = Golden()
+
+    # Preload operands so a MAC moves acc off 0 and a double MAC would show.
+    await command(dut, CMD_LDA, data=6)
+    golden = apply_command(golden, CMD_LDA, 6)
+    await command(dut, CMD_LDB, data=7)
+    golden = apply_command(golden, CMD_LDB, 7)
+
+    # Ringing strobe, cmd held at MAC. Count accepts across the whole ring.
+    dut.ui_in.value = 0
+    dut.uio_in.value = CMD_MAC
+    await ClockCycles(dut.clk, 1)
+    accepts = 0
+    accepts += await count_accepts_span(dut, STROBE | CMD_MAC, None, 2)  # high 2
+    accepts += await count_accepts_span(dut, CMD_MAC, None, 2)           # low 2
+    accepts += await count_accepts_span(dut, STROBE | CMD_MAC, None, 3)  # high 3
+    accepts += await count_accepts_span(dut, CMD_MAC, None, 4)           # settle
+
+    golden = apply_command(golden, CMD_MAC, 0)  # exactly one MAC
+    assert accepts == 1, f"ringing edge fired {accepts} accepts, want 1"
+    await check_pins(dut, golden, "one MAC from a ringing edge")
+    assert golden.acc == 42, "golden model self check failed"
+
+    # The next legal command executes clean, the lockout has cleared.
+    await command(dut, CMD_LDA, data=2)
+    golden = apply_command(golden, CMD_LDA, 2)
+    await command(dut, CMD_LDB, data=5)
+    golden = apply_command(golden, CMD_LDB, 5)
+    await command(dut, CMD_MAC)
+    golden = apply_command(golden, CMD_MAC, 0)
+    await check_pins(dut, golden, "clean MAC after the ringing edge")
+    assert golden.acc == 52, "golden model self check failed"
