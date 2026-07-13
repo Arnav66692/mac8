@@ -510,6 +510,7 @@ async def test_in_flight_cancel(dut):
     await ClockCycles(dut.clk, 3)
     first, total = await measure_one_fire(dut, CMD_MAC)
     assert total == 1, f"fresh MAC after reset fired {total} accepts, want 1"
+    assert first in (2, 3), f"accept latency {first} clocks, want 2 to 3"
     await FallingEdge(dut.clk)
     uo, _, ovf, _, _ = pin_fields(dut)
     assert uo == 0, f"acc not 0 after a post reset MAC, uo_out {uo:#04x}"

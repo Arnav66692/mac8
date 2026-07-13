@@ -10,8 +10,9 @@ Int8 serial MAC for Tiny Tapeout. docs/SPEC.md is frozen v0.1 and it is law. Liv
 4. Freeze the contract, cut units with exit checks, one commit per unit, baseline first. Manual 4.
 5. Verify identifiers, APIs, and tool behavior this session, report claims at their evidence level. Manual 5.
 6. Adversarial review with mutation is the primary gate, the risk map only seeds review dimensions. Manual 6.
-7. One home per fact. Log at every unit. Loop breaker after two identical failures. Manual 7.
+7. One home per fact. Log at every completed unit, dead ends never deleted. Manual 7.
 8. Report failures as failures with output, run the final gate. Manual 8.
+9. Untested policy, the loop breaker and request classification, labeled and cheap, delete on first failure in use. Manual, Untested policy section.
 
 ## Repo facts
 
@@ -39,4 +40,4 @@ Int8 serial MAC for Tiny Tapeout. docs/SPEC.md is frozen v0.1 and it is law. Liv
 
 ## Style
 
-Short sentences. Periods and commas only. No em dashes. No semicolons. Never use leverage, tapestry, foster, delve, seamless, robust, game-changer.
+Short sentences, periods and commas only. The full rule with the banned word list is canonical in the vault root CLAUDE.md, one home per fact.
