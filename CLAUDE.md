@@ -9,7 +9,8 @@ Int8 serial multiply accumulate block for Tiny Tapeout. docs/SPEC.md is the froz
 - src/mac8_ctrl.sv, command decode, one pulse per accept, busy register
 - src/mac8_top.sv, spec pin map, wiring only
 - tb/golden.py, shared golden model, exact sat24
-- tb/test_datapath.py, 9 unit tests. tb/test_top.py, 9 protocol tests
+- tb/test_datapath.py, 9 unit tests. tb/test_top.py, 12 protocol tests
+- docs/SPEC.md frozen v0.1. docs/SPEC_NOTES.md, the v0.2 change queue, not in force
 
 ## Commands
 
@@ -32,5 +33,21 @@ The venv lives outside the repo because the repo path contains spaces and make c
 
 - cocotb 2.0.1 needs Python 3.13 or lower.
 - Icarus $countones is broken, use explicit sums.
-- $error cannot fail a cocotb test, grep logs for guard messages.
+- $error only prints under cocotb. $fatal aborts the sim. The datapath guard uses $fatal.
 - Delete sim_build_* before mutation runs, stale sims pass silently.
+
+## Operating discipline
+
+Adopted from OPERATING_MANUAL.md at the vault root. Evaluated 2026-07-13, not taken on faith.
+
+- Keep TASK_LOG.md in this repo for in progress work. A Now field, plan units with exit checks, verified facts with how each was checked, dead ends.
+- Write pass or fail acceptance criteria at task start. Re read the prompt clause by clause at the end against them.
+- Before a multi file change, record the baseline test result, freeze the contract, cut units each with a named exit check, checkpoint after each.
+- Walk the 10 item risk map to seed the review, record a check or not applicable for each. Boundaries, error paths, state transitions, concurrency, invariants, scale extremes, time, caching, resource lifecycles, unchanged callers.
+- Label load bearing claims by evidence level. Never report reasoning as observation. Verify a file, signal, or API exists this session before citing it.
+- Loop breaker. After the same command fails twice the same way, change approach or ask. No third identical retry.
+
+Kept stronger than the manual, not replaced.
+
+- Adversarial review with independent agents and mutation testing stays the primary bug gate, above a solo checklist. It caught the saturation flag gap on day 1 and the reset phantom on day 2.
+- Always stop on SPEC.md ambiguity, stricter than the manual proceed default, because silicon bugs cannot be patched.
