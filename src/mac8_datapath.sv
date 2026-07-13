@@ -65,6 +65,16 @@ module mac8_datapath (
   end
 
   // All state lives here. do_clr wins if the FSM ever overlaps pulses.
+`ifndef SYNTHESIS
+  // Simulation only guard. The FSM contract is one control pulse per cycle.
+  // The CLR priority below is defensive, not a license to overlap.
+  always_ff @(posedge clk) begin
+    if (rst_n && ($countones({ld_a, ld_b, do_mac, do_clr, ld_sel}) > 1)) begin
+      $error("mac8_datapath. more than one control pulse in the same cycle");
+    end
+  end
+`endif
+
   always_ff @(posedge clk) begin
     if (!rst_n) begin
       a_q       <= '0;
