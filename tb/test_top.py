@@ -1,10 +1,19 @@
 # test_top.py
-# Protocol level tests for mac8_top. External ports only.
+# Protocol level tests for mac8_top. External ports only for stimulus.
 # The driver obeys the SPEC.md rules. Data and command first, then the
 # strobe rise. Strobe high at least 3 core clocks, low at least 2 before
 # the next rise. Data stable while the strobe is high plus 2 clocks after
 # the fall. One helper performs a single command, every test builds on it.
 # Checks sample on falling edges, so values are settled.
+#
+# Gate level prep, F7. Some helpers and tests read internal hierarchy for
+# observation only, never for stimulus. These cannot run against a gate
+# level netlist, whose internal names are gone. Each is tagged WHITE BOX
+# below. The gate level subset split happens in the TT integration task.
+# Reads u_sync.accept, count fired commands. accept_busy_monitor,
+# count_accepts, count_accepts_span, measure_accept_offset, measure_one_fire,
+# test_long_strobe_single_fire, test_busy_pulse_on_mac, test_ringing_edge_lockout.
+# Reads u_dp.out_sel_q, the byte select. assert_reset_state.
 
 import random
 
@@ -109,7 +118,7 @@ async def accept_busy_monitor(dut):
     """Asserts busy is never high in a cycle where an accept fires.
 
     Documents that the busy ignore path is unreachable at v0.1 timing.
-    Reads one internal signal, u_sync.accept, observation only."""
+    WHITE BOX, reads u_sync.accept, observation only, not for gate level."""
     while True:
         await FallingEdge(dut.clk)
         if int(dut.u_sync.accept.value) == 1:
@@ -334,7 +343,8 @@ async def measure_accept_offset(dut, phase_ns):
     Returns how many rising edges pass between the first edge that
     samples the strobe high and the accept cycle. The consuming latch is
     one edge after the accept cycle, so an offset of 2 means the command
-    fires 2 to 3 core clocks after the external edge for any phase."""
+    fires 2 to 3 core clocks after the external edge for any phase.
+    WHITE BOX, reads u_sync.accept, not for gate level."""
     dut.uio_in.value = CMD_MAC
     await ClockCycles(dut.clk, 3)
     await RisingEdge(dut.clk)
@@ -406,7 +416,8 @@ async def test_busy_never_on_accept(dut):
 
 
 async def count_accepts(dut, cycles):
-    """Count accept pulses over a window, sampled on falling edges."""
+    """Count accept pulses over a window, sampled on falling edges.
+    WHITE BOX, reads u_sync.accept, not for gate level."""
     n = 0
     for _ in range(cycles):
         await FallingEdge(dut.clk)
@@ -415,7 +426,8 @@ async def count_accepts(dut, cycles):
 
 
 def assert_reset_state(dut, tag):
-    """Every reset state value, checked on pins plus the byte select."""
+    """Every reset state value, checked on pins plus the byte select.
+    WHITE BOX, reads u_dp.out_sel_q, not for gate level."""
     uo, busy, ovf, low_nibble, reserved = pin_fields(dut)
     assert uo == 0, f"{tag}. uo_out {uo:#04x}, want 0"
     assert busy == 0, f"{tag}. busy pin high"
@@ -428,7 +440,8 @@ def assert_reset_state(dut, tag):
 
 async def measure_one_fire(dut, cmd, window=8):
     """Strobe is already low with cmd staged. Raise it, return the offset
-    to the first accept and the total accepts over the window."""
+    to the first accept and the total accepts over the window.
+    WHITE BOX, reads u_sync.accept, not for gate level."""
     dut.uio_in.value = STROBE | (cmd & 0x7)
     first = None
     total = 0
@@ -542,7 +555,8 @@ async def test_in_flight_cancel(dut):
 
 async def count_accepts_span(dut, uio_high, uio_low, edges):
     """Drive uio_high for the span, sample accept on each of edges falling
-    edges, return the total accepts seen. Used to count across a ring."""
+    edges, return the total accepts seen. Used to count across a ring.
+    WHITE BOX, reads u_sync.accept, not for gate level."""
     dut.uio_in.value = uio_high if uio_high is not None else uio_low
     n = 0
     for _ in range(edges):

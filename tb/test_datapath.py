@@ -1,8 +1,13 @@
 # test_datapath.py
-# cocotb tests for mac8_datapath. The contract is docs/SPEC.md, frozen v0.1.
+# cocotb tests for mac8_datapath. The contract is docs/SPEC.md, frozen v0.2.
 # Drive discipline. Control pulses go high just after a clock edge and drop
 # after exactly one rising edge samples them. All checks sample on falling
 # edges, so values are settled and there is no read race.
+#
+# Gate level prep, F7. This whole suite is WHITE BOX. It unit tests the
+# datapath directly and reads its internal registers, acc_q, a_q, b_q,
+# out_sel_q, through dut_acc and the assertions. It does not run against a
+# gate level netlist. The gate level subset uses the protocol suite only.
 
 import random
 
