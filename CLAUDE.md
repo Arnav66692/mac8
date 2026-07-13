@@ -1,53 +1,42 @@
 # mac8
 
-Int8 serial multiply accumulate block for Tiny Tapeout. docs/SPEC.md is the frozen contract and it is law. On any ambiguity, stop and ask, do not decide.
+Int8 serial MAC for Tiny Tapeout. docs/SPEC.md is frozen v0.1 and it is law. Live task state lives in TASK_LOG.md, never in this file. The working discipline is OPERATING_MANUAL.md v2 at the vault root, indexed below.
 
-## Layout
+## Directive index, section numbers point into the manual
 
-- src/mac8_datapath.sv, all data state, MAC math, saturation, sim only pulse guard
-- src/mac8_sync.sv, strobe synchronizer, accept fires commands 2 to 3 clocks after the edge
-- src/mac8_ctrl.sv, command decode, one pulse per accept, busy register
-- src/mac8_top.sv, spec pin map, wiring only
-- tb/golden.py, shared golden model, exact sat24
-- tb/test_datapath.py, 9 unit tests. tb/test_top.py, 12 protocol tests
-- docs/SPEC.md frozen v0.1. docs/SPEC_NOTES.md, the v0.2 change queue, not in force
+1. Read TASK_LOG.md first, re verify mutable facts by the cheapest check. Manual 1.
+2. Pass or fail acceptance criteria before acting, prompt re read clause by clause at the end. Manual 2.
+3. Hard stops, spec ambiguity, frozen docs, destructive actions. Proceed only on cheap to reverse calls. Manual 3.
+4. Freeze the contract, cut units with exit checks, one commit per unit, baseline first. Manual 4.
+5. Verify identifiers, APIs, and tool behavior this session, report claims at their evidence level. Manual 5.
+6. Adversarial review with mutation is the primary gate, the risk map only seeds review dimensions. Manual 6.
+7. One home per fact. Log at every unit. Loop breaker after two identical failures. Manual 7.
+8. Report failures as failures with output, run the final gate. Manual 8.
 
-## Commands
+## Repo facts
 
-```
-source ~/.venvs/mac8/bin/activate
-cd tb && make                 # both suites
-verilator --lint-only -Wall --top-module mac8_top src/*.sv
-```
+- Layout. src holds four modules. tb holds two suites plus golden.py and the dumpers. docs holds SPEC.md, frozen, and SPEC_NOTES.md, the v0.2 queue, not in force.
+- Run. source ~/.venvs/mac8/bin/activate, then cd tb and make. Single suite, make TB=datapath or make TB=top.
+- Lint. verilator --lint-only -Wall --top-module mac8_top src/*.sv, must stay clean.
+- The venv stays outside the vault and Makefile paths stay relative. The vault path has spaces and make breaks on them.
 
-The venv lives outside the repo because the repo path contains spaces and make cannot handle them in include paths. Keep tb/Makefile source paths relative for the same reason.
+## Ratified design decisions, do not relitigate
 
-## Rules
+- sel encoding, 00 low, 01 mid, 10 high, 11 reserved reads low.
+- Busy is a register, high the cycle after a MAC accept. Commands during busy are dropped, not deferred.
+- accept is combinational off ff2 and ff3, gated by armed. A registered accept breaks the 2 to 3 clock contract.
+- After reset the first command needs strobe observed low, then a fresh rise.
+- CLR wins on overlapped pulses, and the datapath guard $fatals on any overlap.
+- cmd and ui_in cross clock domains unsynchronized. The spec driver rules make them quasi static at sampling.
+- out_byte lags by one clock by design, uo_out is registered.
 
-- always_ff and always_comb only. Nonblocking in sequential blocks. No latches. Lint must stay -Wall clean.
-- Tests compare against tb/golden.py, never against the RTL's own math.
-- Style for comments and docs. Short sentences. Periods and commas only. No em dashes. No semicolons.
-- Commit in logical units, push each batch.
+## Toolchain traps
 
-## Known toolchain traps
+- cocotb 2.0.1 needs Python 3.13 or lower. The venv is Python 3.12.
+- Icarus $countones is broken, explicit sums only in checkers.
+- $error cannot fail a cocotb test, $fatal aborts the sim.
+- Delete sim_build_* before mutation runs, stale compiled sims pass silently.
 
-- cocotb 2.0.1 needs Python 3.13 or lower.
-- Icarus $countones is broken, use explicit sums.
-- $error only prints under cocotb. $fatal aborts the sim. The datapath guard uses $fatal.
-- Delete sim_build_* before mutation runs, stale sims pass silently.
+## Style
 
-## Operating discipline
-
-Adopted from OPERATING_MANUAL.md at the vault root. Evaluated 2026-07-13, not taken on faith.
-
-- Keep TASK_LOG.md in this repo for in progress work. A Now field, plan units with exit checks, verified facts with how each was checked, dead ends.
-- Write pass or fail acceptance criteria at task start. Re read the prompt clause by clause at the end against them.
-- Before a multi file change, record the baseline test result, freeze the contract, cut units each with a named exit check, checkpoint after each.
-- Walk the 10 item risk map to seed the review, record a check or not applicable for each. Boundaries, error paths, state transitions, concurrency, invariants, scale extremes, time, caching, resource lifecycles, unchanged callers.
-- Label load bearing claims by evidence level. Never report reasoning as observation. Verify a file, signal, or API exists this session before citing it.
-- Loop breaker. After the same command fails twice the same way, change approach or ask. No third identical retry.
-
-Kept stronger than the manual, not replaced.
-
-- Adversarial review with independent agents and mutation testing stays the primary bug gate, above a solo checklist. It caught the saturation flag gap on day 1 and the reset phantom on day 2.
-- Always stop on SPEC.md ambiguity, stricter than the manual proceed default, because silicon bugs cannot be patched.
+Short sentences. Periods and commas only. No em dashes. No semicolons. Never use leverage, tapestry, foster, delve, seamless, robust, game-changer.

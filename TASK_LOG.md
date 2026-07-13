@@ -1,6 +1,6 @@
 # Task Log. P1 MAC8
 
-Updated. 2026-07-13, end of day 3.
+Updated. 2026-07-13, after the operating manual v2 rewrite.
 
 ## Goal
 
@@ -26,6 +26,7 @@ Build phase is done and green. Next working session is the explain phase, or the
 - [x] Sync, ctrl, top. Exit check, make TB=top plus verilator -Wall clean.
 - [x] Reset arm bit. Exit check, 3 reset tests pass, arm gate mutation fails them.
 - [x] Vault move. Exit check, both suites green from the new path.
+- [x] Operating manual v2. Exit check, evidence audit of every cited hash and number, v1 archived, state files brought to one home per fact.
 
 ## Verified facts
 
@@ -46,7 +47,8 @@ Build phase is done and green. Next working session is the explain phase, or the
 
 ## Open questions
 
-None blocking. SPEC_NOTES.md holds the v0.2 queue, driver rule clarification and fused LDB_MAC.
+- Awaiting ruling. Repo location. The repo sits inside the vault at code/mac8, moved there 2026-07-13 around 12:15 on Arnav's instruction that everything goes in the vault. The v2 rewrite task asserts an earlier ruling that code stays out. Tradeoff stated in the day report, Obsidian indexing and iCloud Desktop sync churn against the .git directory. No move without a ruling.
+- SPEC_NOTES.md holds the v0.2 queue, driver rule clarification and fused LDB_MAC. Not blocking.
 
 ## Files touched this project
 
