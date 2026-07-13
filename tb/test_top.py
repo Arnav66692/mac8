@@ -31,6 +31,14 @@ UIO_OE_EXPECTED = 0xF0
 RANDOM_CMDS = 500
 RANDOM_SEED = 20260714
 
+# Phase randomization. Every strobe rise gets a sub cycle offset so it lands
+# off the clock grid, exercising the synchronizer with truly asynchronous
+# edges instead of clock aligned ones. Fixed seed for reproducibility, logged
+# once per run. The offset is sub cycle, so edge count based assertions hold.
+PHASE_SEED = 20260713
+_phase_rng = random.Random(PHASE_SEED)
+_phase_logged = False
+
 
 async def start_and_reset(dut):
     """Start the clock and apply synchronous reset for three cycles."""
@@ -50,11 +58,22 @@ async def command(dut, cmd, data=0, high=3, low=2, setup=1):
     Data and command are written first, the strobe rises after them.
     With setup 0 the rise lands in the same window as the data write,
     which is the minimum legal profile. The command executes before this
-    helper returns, so pins are stable for checks right after it."""
+    helper returns, so pins are stable for checks right after it.
+
+    The strobe rise gets a sub cycle phase offset so it lands off the clock
+    grid. Sub cycle keeps the edge count to accept unchanged, so exact cycle
+    assertions still hold, but the synchronizer sees a truly async edge."""
+    global _phase_logged
+    if not _phase_logged:
+        dut._log.info(f"phase randomization on, seed {PHASE_SEED}")
+        _phase_logged = True
     dut.ui_in.value = data & 0xFF
     dut.uio_in.value = cmd & 0x7
     if setup:
         await ClockCycles(dut.clk, setup)
+    # Round to 0.1 ns so the offset is an exact number of simulator steps,
+    # still off the 10 ns clock grid.
+    await Timer(round(_phase_rng.uniform(0.5, CLK_PERIOD_NS - 0.5), 1), "ns")
     dut.uio_in.value = STROBE | (cmd & 0x7)
     await ClockCycles(dut.clk, high)
     dut.uio_in.value = cmd & 0x7
