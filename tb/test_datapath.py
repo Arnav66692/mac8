@@ -281,6 +281,71 @@ async def test_saturation_sticky(dut):
 
 
 @cocotb.test()
+async def test_exact_rail_boundary(dut):
+    """Landing exactly on a rail is not saturation. One step past it is.
+
+    This pins the strict compares in the RTL. A clamp written with >= or <=
+    passes every other test, because only ovf differs when the 25 bit sum
+    equals a rail exactly. Found by mutation review."""
+    await start_and_reset(dut)
+    golden = Golden()
+
+    # Positive rail. 520 x 16129 plus 1520 plus 7 equals 8388607 exactly.
+    await pulse(dut, "ld_a", data=127)
+    golden = golden.lda(127)
+    await pulse(dut, "ld_b", data=127)
+    golden = golden.ldb(127)
+    for _ in range(520):
+        await pulse(dut, "do_mac")
+        golden = golden.mac()
+    await pulse(dut, "ld_a", data=40)
+    golden = golden.lda(40)
+    await pulse(dut, "ld_b", data=38)
+    golden = golden.ldb(38)
+    await pulse(dut, "do_mac")
+    golden = golden.mac()
+    await pulse(dut, "ld_a", data=7)
+    golden = golden.lda(7)
+    await pulse(dut, "ld_b", data=1)
+    golden = golden.ldb(1)
+    await pulse(dut, "do_mac")
+    golden = golden.mac()
+    await settle(dut)
+    assert golden.acc == INT24_MAX, "golden model self check failed"
+    assert not golden.ovf, "golden model self check failed"
+    check(dut, golden, "exact positive rail")
+    assert int(dut.ovf.value) == 0, "ovf set on an exact positive rail landing"
+
+    await pulse(dut, "do_mac")
+    golden = golden.mac()
+    await settle(dut)
+    check(dut, golden, "one step past the positive rail")
+    assert int(dut.ovf.value) == 1, "ovf not set one step past the positive rail"
+
+    # Negative rail. 1024 x minus 8192 equals minus 8388608 exactly.
+    await pulse(dut, "do_clr")
+    golden = golden.clr()
+    await pulse(dut, "ld_a", data=64)
+    golden = golden.lda(64)
+    await pulse(dut, "ld_b", data=(-128) & 0xFF)
+    golden = golden.ldb(-128)
+    for _ in range(1024):
+        await pulse(dut, "do_mac")
+        golden = golden.mac()
+    await settle(dut)
+    assert golden.acc == INT24_MIN, "golden model self check failed"
+    assert not golden.ovf, "golden model self check failed"
+    check(dut, golden, "exact negative rail")
+    assert int(dut.ovf.value) == 0, "ovf set on an exact negative rail landing"
+
+    await pulse(dut, "do_mac")
+    golden = golden.mac()
+    await settle(dut)
+    check(dut, golden, "one step past the negative rail")
+    assert int(dut.ovf.value) == 1, "ovf not set one step past the negative rail"
+
+
+@cocotb.test()
 async def test_clr_clears_acc_and_ovf(dut):
     """CLR zeroes acc and ovf. It leaves A, B, and the byte select alone."""
     await start_and_reset(dut)
