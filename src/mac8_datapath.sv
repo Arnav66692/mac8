@@ -69,8 +69,16 @@ module mac8_datapath (
   // Simulation only guard. The FSM contract is one control pulse per cycle.
   // The CLR priority below is defensive, not a license to overlap.
   // Plain always on purpose. This block checks, it does not infer a flop.
+  // Explicit sum, not $countones. Icarus 13 returns garbage counts for
+  // $countones on a concat of scalars, 6 for a two bit example.
+  logic [2:0] dbg_pulse_count;
+
+  always_comb begin
+    dbg_pulse_count = 3'(ld_a) + 3'(ld_b) + 3'(do_mac) + 3'(do_clr) + 3'(ld_sel);
+  end
+
   always @(posedge clk) begin
-    if (rst_n && ($countones({ld_a, ld_b, do_mac, do_clr, ld_sel}) > 1)) begin
+    if (rst_n && (dbg_pulse_count > 3'd1)) begin
       $error("mac8_datapath. more than one control pulse in the same cycle");
     end
   end

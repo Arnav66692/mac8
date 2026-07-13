@@ -10,7 +10,7 @@ import random
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles, FallingEdge, RisingEdge
+from cocotb.triggers import ClockCycles, FallingEdge, RisingEdge, Timer
 
 from golden import INT24_MAX, Golden, apply_command
 
@@ -265,6 +265,98 @@ async def test_random_protocol_500(dut):
 
     monitor.cancel()
     dut._log.info(f"{RANDOM_CMDS} random commands done. final acc {golden.acc}")
+
+
+@cocotb.test()
+async def test_busy_pulse_on_mac(dut):
+    """Busy pulses high for exactly one cycle per accepted MAC, the cycle
+    after the accept. A non MAC command never raises it. This is the
+    positive half of the busy contract, a stuck low busy pin fails here."""
+    await start_and_reset(dut)
+    golden = Golden()
+    await command(dut, CMD_LDA, data=7)
+    golden = apply_command(golden, CMD_LDA, 7)
+    await command(dut, CMD_LDB, data=9)
+    golden = apply_command(golden, CMD_LDB, 9)
+
+    task = cocotb.start_soon(command(dut, CMD_MAC, high=3, low=3, setup=1))
+    trace = []
+    for _ in range(10):
+        await FallingEdge(dut.clk)
+        accept_bit = int(dut.u_sync.accept.value)
+        busy_bit = (int(dut.uio_out.value) >> 4) & 1
+        trace.append((accept_bit, busy_bit))
+    await task
+    golden = apply_command(golden, CMD_MAC, 0)
+
+    accepts = [i for i, (a, _) in enumerate(trace) if a]
+    busys = [i for i, (_, b) in enumerate(trace) if b]
+    assert len(accepts) == 1, f"expected one accept, saw cycles {accepts}"
+    assert len(busys) == 1, f"expected one busy cycle, saw cycles {busys}"
+    assert busys[0] == accepts[0] + 1, (
+        f"busy at cycle {busys[0]}, accept at {accepts[0]}, want accept plus 1"
+    )
+    await check_pins(dut, golden, "after the busy pulse MAC")
+
+    task = cocotb.start_soon(command(dut, CMD_SEL_MID, high=3, low=3, setup=1))
+    busy_seen = 0
+    for _ in range(10):
+        await FallingEdge(dut.clk)
+        busy_seen += (int(dut.uio_out.value) >> 4) & 1
+    await task
+    golden = apply_command(golden, CMD_SEL_MID, 0)
+    assert busy_seen == 0, "busy rose on a non MAC command"
+    await check_pins(dut, golden, "after the non MAC busy watch")
+
+
+async def measure_accept_offset(dut, phase_ns):
+    """Raise the strobe phase_ns into a cycle, truly asynchronous.
+
+    Returns how many rising edges pass between the first edge that
+    samples the strobe high and the accept cycle. The consuming latch is
+    one edge after the accept cycle, so an offset of 2 means the command
+    fires 2 to 3 core clocks after the external edge for any phase."""
+    dut.uio_in.value = CMD_MAC
+    await ClockCycles(dut.clk, 3)
+    await RisingEdge(dut.clk)
+    await Timer(phase_ns, "ns")
+    dut.uio_in.value = STROBE | CMD_MAC
+    edges = 0
+    seen = None
+    while seen is None and edges < 8:
+        await RisingEdge(dut.clk)
+        edges += 1
+        await FallingEdge(dut.clk)
+        if int(dut.u_sync.accept.value) == 1:
+            seen = edges
+    while edges < 4:
+        await RisingEdge(dut.clk)
+        edges += 1
+    dut.uio_in.value = CMD_MAC
+    await ClockCycles(dut.clk, 2)
+    return seen
+
+
+@cocotb.test()
+async def test_accept_latency_two_to_three(dut):
+    """The command fires 2 to 3 core clocks after the external strobe
+    edge, for any edge phase. Pins the synchronizer depth both ways. An
+    edge detect off ff1 lands early, a registered accept lands late."""
+    await start_and_reset(dut)
+    golden = Golden()
+    await command(dut, CMD_LDA, data=1)
+    golden = apply_command(golden, CMD_LDA, 1)
+    await command(dut, CMD_LDB, data=1)
+    golden = apply_command(golden, CMD_LDB, 1)
+
+    for phase_ns in (2.5, 5.0, 7.5):
+        seen = await measure_accept_offset(dut, phase_ns)
+        golden = apply_command(golden, CMD_MAC, 0)
+        assert seen == 2, (
+            f"phase {phase_ns} ns. accept {seen} cycles after the first "
+            f"sampling edge, expected 2"
+        )
+        await check_pins(dut, golden, f"latency probe at phase {phase_ns} ns")
 
 
 @cocotb.test()
