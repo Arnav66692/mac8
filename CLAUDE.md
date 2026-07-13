@@ -11,7 +11,7 @@ Int8 serial MAC for Tiny Tapeout. docs/SPEC.md is frozen v0.1 and it is law. Liv
 5. Verify identifiers, APIs, and tool behavior this session, report claims at their evidence level. Manual 5.
 6. Adversarial review with mutation is the primary gate, the risk map only seeds review dimensions. Manual 6.
 7. One home per fact. Log at every completed unit, dead ends never deleted. Manual 7.
-8. Report failures as failures with output, run the final gate. Manual 8.
+8. Reports lead with findings, green checkmarks last. Report failures with output, run the final gate. Manual 8.
 9. Untested policy, the loop breaker and request classification, labeled and cheap, delete on first failure in use. Manual, Untested policy section.
 
 ## Repo facts
