@@ -79,7 +79,7 @@ module mac8_datapath (
 
   always @(posedge clk) begin
     if (rst_n && (dbg_pulse_count > 3'd1)) begin
-      $error("mac8_datapath. more than one control pulse in the same cycle");
+      $fatal(1, "mac8_datapath. more than one control pulse in the same cycle");
     end
   end
 `endif
