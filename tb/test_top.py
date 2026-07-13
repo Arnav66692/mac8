@@ -379,3 +379,138 @@ async def test_busy_never_on_accept(dut):
     await check_pins(dut, golden, "MAC heavy minimum spacing stream")
     assert golden.acc == 240, "golden model self check failed"
     monitor.cancel()
+
+
+# Reset arming tests, the v0.2 fix. These drive only external pins. They
+# read u_sync.accept to count fired commands and u_dp.out_sel_q for the
+# byte select, the same white box reads the latency tests already use.
+
+
+async def count_accepts(dut, cycles):
+    """Count accept pulses over a window, sampled on falling edges."""
+    n = 0
+    for _ in range(cycles):
+        await FallingEdge(dut.clk)
+        n += int(dut.u_sync.accept.value)
+    return n
+
+
+def assert_reset_state(dut, tag):
+    """Every reset state value, checked on pins plus the byte select."""
+    uo, busy, ovf, low_nibble, reserved = pin_fields(dut)
+    assert uo == 0, f"{tag}. uo_out {uo:#04x}, want 0"
+    assert busy == 0, f"{tag}. busy pin high"
+    assert ovf == 0, f"{tag}. ovf pin high"
+    assert low_nibble == 0, f"{tag}. uio_out low nibble {low_nibble:#03x}, want 0"
+    assert reserved == 0, f"{tag}. reserved bits {reserved}, want 0"
+    assert int(dut.uio_oe.value) == UIO_OE_EXPECTED, f"{tag}. uio_oe wrong"
+    assert int(dut.u_dp.out_sel_q.value) == 0, f"{tag}. out_sel not low byte"
+
+
+async def measure_one_fire(dut, cmd, window=8):
+    """Strobe is already low with cmd staged. Raise it, return the offset
+    to the first accept and the total accepts over the window."""
+    dut.uio_in.value = STROBE | (cmd & 0x7)
+    first = None
+    total = 0
+    for i in range(1, window + 1):
+        await RisingEdge(dut.clk)
+        await FallingEdge(dut.clk)
+        got = int(dut.u_sync.accept.value)
+        total += got
+        if got and first is None:
+            first = i
+    return first, total
+
+
+@cocotb.test()
+async def test_strobe_high_across_reset(dut):
+    """Strobe held high across reset release fires no command. Then a
+    clean low, high sequence fires exactly one, at normal latency."""
+    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, "ns").start())
+    dut.ena.value = 1
+    # A nonzero command and data held high with the strobe through reset.
+    dut.ui_in.value = 0x5A
+    dut.uio_in.value = STROBE | CMD_LDA
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 3)
+    dut.rst_n.value = 1
+
+    accepts = await count_accepts(dut, 20)
+    assert accepts == 0, f"strobe high across reset fired {accepts} accepts"
+    await FallingEdge(dut.clk)
+    assert_reset_state(dut, "strobe high across reset")
+
+    # Drop the strobe, wait the legal low time, raise it. One command fires.
+    dut.uio_in.value = CMD_LDA
+    await ClockCycles(dut.clk, 3)
+    first, total = await measure_one_fire(dut, CMD_LDA)
+    assert total == 1, f"clean rise after reset fired {total} accepts, want 1"
+    assert first in (2, 3), f"accept latency {first} clocks, want 2 to 3"
+
+
+@cocotb.test()
+async def test_reset_replay(dut):
+    """A reset pulse during a legal strobe does not replay the in flight
+    command. State stays clean reset until a fresh edge arrives."""
+    await start_and_reset(dut)
+
+    # A legal command, strobe raised and held high.
+    dut.ui_in.value = 0x5A
+    dut.uio_in.value = CMD_LDA
+    await ClockCycles(dut.clk, 1)
+    dut.uio_in.value = STROBE | CMD_LDA
+    await ClockCycles(dut.clk, 4)
+
+    # Pulse reset mid strobe. The strobe stays high across it.
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 2)
+    dut.rst_n.value = 1
+
+    accepts = await count_accepts(dut, 20)
+    assert accepts == 0, f"reset mid strobe replayed, {accepts} accepts"
+    await FallingEdge(dut.clk)
+    assert_reset_state(dut, "reset replay")
+
+    # A fresh low, high edge fires exactly one command, normal latency.
+    dut.uio_in.value = CMD_LDA
+    await ClockCycles(dut.clk, 3)
+    first, total = await measure_one_fire(dut, CMD_LDA)
+    assert total == 1, f"fresh edge after reset fired {total} accepts, want 1"
+    assert first in (2, 3), f"accept latency {first} clocks, want 2 to 3"
+
+
+@cocotb.test()
+async def test_in_flight_cancel(dut):
+    """A reset in the 1 to 2 clock window after the external edge, before
+    the accept would fire, cancels the command. It never executes."""
+    await start_and_reset(dut)
+
+    # Load real operands so a stray MAC would move acc off 0.
+    await command(dut, CMD_LDA, data=5)
+    await command(dut, CMD_LDB, data=7)
+
+    # Raise the strobe for a MAC, then reset 1 clock later, before accept.
+    dut.ui_in.value = 0
+    dut.uio_in.value = CMD_MAC
+    await ClockCycles(dut.clk, 1)
+    dut.uio_in.value = STROBE | CMD_MAC
+    await ClockCycles(dut.clk, 1)
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 2)
+    dut.rst_n.value = 1
+
+    accepts = await count_accepts(dut, 20)
+    assert accepts == 0, f"cancelled MAC executed after reset, {accepts} accepts"
+    await FallingEdge(dut.clk)
+    assert_reset_state(dut, "in flight cancel")
+
+    # Reset wiped the operands. A fresh MAC now is 0 times 0, acc stays 0.
+    dut.uio_in.value = CMD_MAC
+    await ClockCycles(dut.clk, 3)
+    first, total = await measure_one_fire(dut, CMD_MAC)
+    assert total == 1, f"fresh MAC after reset fired {total} accepts, want 1"
+    await FallingEdge(dut.clk)
+    uo, _, ovf, _, _ = pin_fields(dut)
+    assert uo == 0, f"acc not 0 after a post reset MAC, uo_out {uo:#04x}"
+    assert ovf == 0, "ovf set after a clean post reset MAC"
