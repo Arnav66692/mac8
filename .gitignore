@@ -1,6 +1,8 @@
 *.vcd
 *.fst
 sim_build/
+sim_build_*/
 __pycache__/
 .venv/
 results.xml
+results_*.xml

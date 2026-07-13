@@ -68,7 +68,8 @@ module mac8_datapath (
 `ifndef SYNTHESIS
   // Simulation only guard. The FSM contract is one control pulse per cycle.
   // The CLR priority below is defensive, not a license to overlap.
-  always_ff @(posedge clk) begin
+  // Plain always on purpose. This block checks, it does not infer a flop.
+  always @(posedge clk) begin
     if (rst_n && ($countones({ld_a, ld_b, do_mac, do_clr, ld_sel}) > 1)) begin
       $error("mac8_datapath. more than one control pulse in the same cycle");
     end
