@@ -18,7 +18,7 @@ Design and verify the int8 MAC block, then pass the P1 gates. Acceptance for the
 
 ## Now
 
-Build phase is done and green. Next working session is the explain phase, or the waveform walk with Surfer on tb/mac8_top.vcd. Arnav drives which.
+Build phase is done and green. Explain phase study material is written, the Notion Explanation page, app.notion.com/p/39c5d2c456c0814fa3fdeae1384a2806, a child of the build log. Next working session is the waveform walk with Surfer on tb/mac8_top.vcd, then the FAQ drills and the closed book replication gate. Arnav drives which.
 
 ## Plan state
 
