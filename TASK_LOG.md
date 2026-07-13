@@ -48,8 +48,15 @@ Build phase is done and green. Next working session is the explain phase, or the
 
 ## Open questions
 
-- Awaiting ruling. Repo location. The repo sits inside the vault at code/mac8, moved there 2026-07-13 around 12:15 on Arnav's instruction that everything goes in the vault. The v2 rewrite task asserts an earlier ruling that code stays out. Tradeoff stated in the day report, Obsidian indexing and iCloud Desktop sync churn against the .git directory. No move without a ruling.
 - SPEC_NOTES.md holds the v0.2 queue, driver rule clarification and fused LDB_MAC. Not blocking.
+
+## Resolved, repo location, 2026-07-13
+
+Ruled by Arnav. The repo stays inside the vault at code/mac8. His earlier claim that a prior ruling said code stays out was false, there was no such ruling, correction noted here as instructed.
+
+iCloud finding, with evidence and method. The vault is not iCloud Drive synced on this Mac. Verified four ways. ls ~/Library/Mobile Documents returns No such file or directory, the iCloud Drive container does not exist. fileproviderctl dump reports the iCloud Drive domain last drop reason Domain disabled. brctl status self check fails access denied. Zero .icloud placeholder files anywhere in the vault. The account has CloudDesktop provisioned but the Drive domain is off on this machine, so nothing syncs the .git directory. Recheck cheaply with ls ~/Library/Mobile Documents, if it exists, iCloud Drive is back on and the git exclusion decision reopens.
+
+Protections applied. Obsidian exclude filter, .obsidian/app.json userIgnoreFilters holds code/, so the vault stops indexing the repo. No git internals exclusion needed, iCloud is off. GitHub is the real backup, origin set to github.com/Arnav66692/mac8, working tree clean, nothing unpushed.
 
 ## Files touched this project
 

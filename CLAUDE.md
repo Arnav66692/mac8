@@ -23,6 +23,7 @@ Int8 serial MAC for Tiny Tapeout. docs/SPEC.md is frozen v0.1 and it is law. Liv
 
 ## Ratified design decisions, do not relitigate
 
+- Repo location, code/mac8 lives inside the vault, ruled 2026-07-13. The vault is not iCloud Drive synced on this Mac, so .git is not at sync risk, recheck with ls ~/Library/Mobile Documents. Obsidian excludes code/ via the vault .obsidian/app.json. Evidence in TASK_LOG.
 - sel encoding, 00 low, 01 mid, 10 high, 11 reserved reads low.
 - Busy is a register, high the cycle after a MAC accept. Commands during busy are dropped, not deferred.
 - accept is combinational off ff2 and ff3, gated by armed. A registered accept breaks the 2 to 3 clock contract.
