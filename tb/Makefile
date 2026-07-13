@@ -3,6 +3,10 @@
 # TB=datapath runs the unit suite against mac8_datapath.
 # TB=top runs the protocol suite against mac8_top.
 # The default runs both in sequence, separate build dirs and results.
+# Activate the venv first, source ~/.venvs/mac8/bin/activate.
+# Source paths are relative on purpose. The vault path contains spaces
+# and make cannot quote them. The venv lives outside the vault for the
+# same reason, the cocotb include line breaks on a space in its path.
 
 TB ?= all
 
@@ -21,10 +25,10 @@ else
 SIM ?= icarus
 TOPLEVEL_LANG ?= verilog
 
-VERILOG_SOURCES += $(CURDIR)/../src/mac8_datapath.sv
+VERILOG_SOURCES += ../src/mac8_datapath.sv
 
 ifeq ($(TB),datapath)
-VERILOG_SOURCES += $(CURDIR)/dump.sv
+VERILOG_SOURCES += dump.sv
 COMPILE_ARGS += -s mac8_dump
 COCOTB_TOPLEVEL := mac8_datapath
 COCOTB_TEST_MODULES := test_datapath
@@ -33,10 +37,10 @@ COCOTB_RESULTS_FILE := results_datapath.xml
 endif
 
 ifeq ($(TB),top)
-VERILOG_SOURCES += $(CURDIR)/../src/mac8_sync.sv
-VERILOG_SOURCES += $(CURDIR)/../src/mac8_ctrl.sv
-VERILOG_SOURCES += $(CURDIR)/../src/mac8_top.sv
-VERILOG_SOURCES += $(CURDIR)/dump_top.sv
+VERILOG_SOURCES += ../src/mac8_sync.sv
+VERILOG_SOURCES += ../src/mac8_ctrl.sv
+VERILOG_SOURCES += ../src/mac8_top.sv
+VERILOG_SOURCES += dump_top.sv
 COMPILE_ARGS += -s mac8_dump_top
 COCOTB_TOPLEVEL := mac8_top
 COCOTB_TEST_MODULES := test_top
