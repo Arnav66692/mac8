@@ -27,6 +27,7 @@ Build phase is done and green. Next working session is the explain phase, or the
 - [x] Reset arm bit. Exit check, 3 reset tests pass, arm gate mutation fails them.
 - [x] Vault move. Exit check, both suites green from the new path.
 - [x] Operating manual v2. Exit check, evidence audit of every cited hash and number, v1 archived, state files brought to one home per fact.
+- [x] Manual audit fixes. Exit check, all five audit findings corrected, protocol suite 12 green after the cancel test hardening, commit a190b91.
 
 ## Verified facts
 
