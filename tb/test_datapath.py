@@ -5,75 +5,27 @@
 # edges, so values are settled and there is no read race.
 
 import random
-from dataclasses import dataclass, replace
 
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, FallingEdge, RisingEdge
 from cocotb.utils import get_sim_time
 
+from golden import (
+    INT24_MAX,
+    INT24_MIN,
+    SEL_HI,
+    SEL_LO,
+    SEL_MID,
+    SEL_RSVD,
+    Golden,
+    as_signed,
+)
+
 CLK_PERIOD_NS = 10
-
-INT24_MAX = 8388607
-INT24_MIN = -8388608
-
-SEL_LO = 0
-SEL_MID = 1
-SEL_HI = 2
-SEL_RSVD = 3
 
 RANDOM_OPS = 2000
 RANDOM_SEED = 20260713
-
-
-def as_signed(value, bits):
-    """Two's complement decode of an unsigned integer."""
-    mask = (1 << bits) - 1
-    value &= mask
-    if value & (1 << (bits - 1)):
-        return value - (1 << bits)
-    return value
-
-
-def sat24(x):
-    """Exact saturation per SPEC.md. Returns the clamped value and a hit flag."""
-    if x > INT24_MAX:
-        return INT24_MAX, True
-    if x < INT24_MIN:
-        return INT24_MIN, True
-    return x, False
-
-
-@dataclass(frozen=True)
-class Golden:
-    """Golden model of the datapath state. Immutable, each op returns a new state."""
-
-    a: int = 0
-    b: int = 0
-    acc: int = 0
-    ovf: bool = False
-    sel: int = SEL_LO
-
-    def lda(self, byte):
-        return replace(self, a=as_signed(byte, 8))
-
-    def ldb(self, byte):
-        return replace(self, b=as_signed(byte, 8))
-
-    def mac(self):
-        acc, hit = sat24(self.acc + self.a * self.b)
-        return replace(self, acc=acc, ovf=self.ovf or hit)
-
-    def clr(self):
-        return replace(self, acc=0, ovf=False)
-
-    def load_sel(self, sel):
-        return replace(self, sel=sel & 0x3)
-
-    def acc_byte(self):
-        """Selected accumulator byte. Reserved encoding 11 reads the low byte."""
-        shift = {SEL_LO: 0, SEL_MID: 8, SEL_HI: 16}.get(self.sel, 0)
-        return ((self.acc & 0xFFFFFF) >> shift) & 0xFF
 
 
 def dut_acc(dut):
