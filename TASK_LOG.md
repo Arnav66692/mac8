@@ -74,6 +74,7 @@ At F8 the vault OPERATING_MANUAL.md, the v2, was gone. Only OPERATING_MANUAL_v1.
 - Guard uses $fatal not $error, so an overlap actually fails a run.
 - Lockout stays as built, 4 clocks via a 2 bit counter plus a run flag. Ratified, the 2 bit counter clause was a cost estimate, not a requirement.
 - Vault spec copy renamed to MAC8 Spec.md, version neutral, the version lives inside the file. Zero hand maintained references needed fixing, verified by sweep.
+- Notion Explanation page refreshed to the current repo, 2026-07-13. It now carries the ff2 arm with the two cycle skip, the F3 lockout section, the spec v0.2 rules, incidents five and six, and four new hard FAQ. Marked current as of ba49d54. Verified by refetch, 28 checks, 63 toggles, no stale strings outside the one labeled historical quote.
 
 ## Dead ends
 
