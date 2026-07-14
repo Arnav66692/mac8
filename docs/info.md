@@ -30,6 +30,14 @@ A quick smoke test. CLR, LDA 6, LDB 7, MAC, SEL_LO. uo_out reads 42.
 
 None required. Any microcontroller with 22 free GPIO pins can drive it, 8 outputs to ui_in, 4 outputs to uio[3:0], 2 inputs from uio[5:4], and 8 inputs from uo_out. At GPIO toggle speeds the strobe timing rules are met with huge margin.
 
+## Layout
+
+The hardened macro on one Tiny Tapeout tile, sky130. The full die shows the standard cell rows packed across the tile with the power straps along the top. The zoom is a small interior window where individual rows and cells are visible.
+
+![Full die](gds_full_die.png)
+
+![Standard cell rows](gds_cell_rows.png)
+
 ## Pin map
 
 | Pin | Dir | Role |
