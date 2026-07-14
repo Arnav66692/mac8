@@ -34,6 +34,14 @@ The review found a bug class the mutation gate is structurally blind to. The arm
 - [x] F7. White box markers on every test and helper that reads internal hierarchy. Commit 964bf1e.
 - [x] F8. Manual reporting line, reports lead with findings. Commit 7e5b8e3 for the index. Manual restored, see the finding below.
 
+## Verified facts, F1
+
+- Hardening numbers, from runs/wokwi/final/metrics.json of CI run 29308958917 at commit ca13138. Std cells 1181, sequential 61, total instances 3015 with fill and tap. Utilization 63.7 percent. Core area 16493 um2, die 17955 um2, fits 1x1. Setup WNS plus 0.695 ns at the worst corner, ss 100C 1v60 max, TNS 0 everywhere. Hold WNS plus 0.111 ns at ff n40C min, TNS 0. Magic DRC 0, KLayout checks clean, LVS 0, antenna 0.
+- 263 max slew violations at the ss 100C 1v60 corner only, worst 1.06 ns against a 0.75 ns pin limit, zero at tt and ff. Timing still met. Flagged for round two review.
+- GL suite 6 of 6 on the hardened netlist. It caught nothing RTL sim missed, the X out of reset class was the risk and the reset path held.
+- Doc cross check, mechanical plus two adversarial agents. Pin tables identical to SPEC character for character, all 24 yaml labels match. Two real doc bugs found and fixed, the GPIO count said 12 where the enumeration totals 22, and the busy drop rule was missing from info.md.
+- The template Makefile broke locally on the vault path spaces, fixed with relative paths, the standing trap.
+
 ## Verified facts, review batch
 
 - Both suites green after every unit. 9 datapath, 13 protocol, verified by make.
@@ -60,6 +68,7 @@ At F8 the vault OPERATING_MANUAL.md, the v2, was gone. Only OPERATING_MANUAL_v1.
 - [x] Vault move. Exit check, both suites green from the new path.
 - [x] Operating manual v2. Exit check, evidence audit of every cited hash and number, v1 archived, state files brought to one home per fact.
 - [x] Manual audit fixes. Exit check, all five audit findings corrected, protocol suite 12 green after the cancel test hardening, commit a190b91.
+- [x] F1 Tiny Tapeout integration. Template adopted into this repo from ttsky-verilog-template at the ttsky26c tag, confirmed via the live shuttle page and the template's own tag commit. Top renamed to tt_um_arnav_mac8, not wrapped. Pin only suite in test/ runs at RTL and gate level, white box stays in tb/. Exit check, gds, precheck, and gl_test jobs green in CI, 6 of 6 GL tests pass on the hardened netlist, fits 1x1 at 63.7 percent utilization, setup and hold met at all corners. Viewer job disabled, Pages needs a public repo. KLayout render skipped, not installed, would blow the time box.
 
 ## Verified facts
 
