@@ -40,9 +40,13 @@ module mac8_sync (
 );
 
   // ff1 may go metastable. Only ff2 feeds logic. ff3 holds history.
-  logic ff1;
-  logic ff2;
-  logic ff3;
+  // keep locks each flop against merge, replication, and sweep in
+  // synthesis, ruled in review round 1.5. Scope is these three flops only.
+  // Hold fixing on the ff1 to ff2 net stays allowed, the hold buffer is
+  // the tool preventing a real violation, same ruling.
+  (* keep *) logic ff1;
+  (* keep *) logic ff2;
+  (* keep *) logic ff3;
 
   // Two cycle post reset skip. ff2 only reflects the real strobe two clocks
   // after release, so arming must ignore both reset transient cycles.
