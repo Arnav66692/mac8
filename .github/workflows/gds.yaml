@@ -37,11 +37,15 @@ jobs:
       - name: GL test
         uses: TinyTapeout/tt-gds-action/gl_test@ttsky26c
 
-  viewer:
-    needs: gds
-    runs-on: ubuntu-24.04
-    permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
-    steps:
-      - uses: TinyTapeout/tt-gds-action/viewer@ttsky26c
+# The template's viewer job deploys the GDS viewer to GitHub Pages. Pages is
+# unavailable on this private repo, so the job fails on environment, not on
+# the design, and a red run would mask real failures. Restore it verbatim
+# from the template if the repo ever goes public.
+#  viewer:
+#    needs: gds
+#    runs-on: ubuntu-24.04
+#    permissions:
+#      pages: write      # to deploy to Pages
+#      id-token: write   # to verify the deployment originates from an appropriate source
+#    steps:
+#      - uses: TinyTapeout/tt-gds-action/viewer@ttsky26c
