@@ -1,9 +1,12 @@
-// mac8_top.sv
-// Pin map per docs/SPEC.md, frozen v0.1. Wiring only, no logic.
+// tt_um_arnav_mac8.sv
+// Tiny Tapeout top for the MAC8 unit, TTSKY26c shuttle.
+// Pin map per docs/SPEC.md, frozen v0.2. Wiring only, no logic.
 // uio bits 3 to 0 are inputs, bits 7 to 4 are outputs, direction static.
-// ena is accepted and ignored in v0.1 per the spec.
+// ena is accepted and ignored per the spec.
+// The tt_um_ prefix is the shuttle top module requirement. This module was
+// mac8_top before F1, renamed not wrapped, the port list already matched.
 
-module mac8_top (
+module tt_um_arnav_mac8 (
     input  logic       clk,
     input  logic       rst_n,
     input  logic       ena,

@@ -39,10 +39,10 @@ endif
 ifeq ($(TB),top)
 VERILOG_SOURCES += ../src/mac8_sync.sv
 VERILOG_SOURCES += ../src/mac8_ctrl.sv
-VERILOG_SOURCES += ../src/mac8_top.sv
+VERILOG_SOURCES += ../src/tt_um_arnav_mac8.sv
 VERILOG_SOURCES += dump_top.sv
 COMPILE_ARGS += -s mac8_dump_top
-COCOTB_TOPLEVEL := mac8_top
+COCOTB_TOPLEVEL := tt_um_arnav_mac8
 COCOTB_TEST_MODULES := test_top
 SIM_BUILD := sim_build_top
 COCOTB_RESULTS_FILE := results_top.xml

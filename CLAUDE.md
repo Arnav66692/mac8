@@ -16,9 +16,10 @@ Int8 serial MAC for Tiny Tapeout. docs/SPEC.md is frozen v0.1 and it is law. Liv
 
 ## Repo facts
 
-- Layout. src holds four modules. tb holds two suites plus golden.py and the dumpers. docs holds SPEC.md, frozen, and SPEC_NOTES.md, the v0.2 queue, not in force.
+- Layout. src holds four modules, the top is tt_um_arnav_mac8, was mac8_top before F1. tb holds the two white box RTL suites plus golden.py and the dumpers. test holds the Tiny Tapeout pin only suite. docs holds SPEC.md at v0.2, frozen, SPEC_NOTES.md the feature queue, and info.md the shuttle datasheet source.
 - Run. source ~/.venvs/mac8/bin/activate, then cd tb and make. Single suite, make TB=datapath or make TB=top.
-- Lint. verilator --lint-only -Wall --top-module mac8_top src/*.sv, must stay clean.
+- Lint. verilator --lint-only -Wall --top-module tt_um_arnav_mac8 src/mac8_*.sv src/tt_um_arnav_mac8.sv, must stay clean. src/config.json is the TT hardening config, not RTL.
+- Tiny Tapeout. Workflows in .github/workflows are verbatim from ttsky-verilog-template at the ttsky26c tag. test/ is the pin only suite, runs at RTL and gate level in CI. tb/ is the white box RTL suite, local only. Do not submit to the shuttle, that is Arnav's decision.
 - The venv stays outside the vault and Makefile paths stay relative. The vault path has spaces and make breaks on them.
 
 ## Ratified design decisions, do not relitigate

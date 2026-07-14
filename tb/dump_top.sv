@@ -5,7 +5,7 @@ module mac8_dump_top ();
 
   initial begin
     $dumpfile("mac8_top.vcd");
-    $dumpvars(0, mac8_top);
+    $dumpvars(0, tt_um_arnav_mac8);
   end
 
 endmodule
