@@ -1,0 +1,60 @@
+# Tiny Tapeout project information
+project:
+  title:        "MAC8 serial multiply accumulate"
+  author:       "Arnav Singh"
+  discord:      ""
+  description:  "Serial int8 multiply accumulate with a 24 bit saturating accumulator and sticky overflow flag"
+  language:     "SystemVerilog"
+  clock_hz:     50000000
+
+  # How many tiles your design occupies? A single tile is about 167x108 uM.
+  tiles: "1x1"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
+
+  # Your top module name must start with "tt_um_". Make it unique by including your github username:
+  top_module:  "tt_um_arnav_mac8"
+
+  # List your project's source files here.
+  # Source files must be in ./src and you must list each source file separately, one per line.
+  # Don't forget to also update `PROJECT_SOURCES` in test/Makefile.
+  source_files:
+    - "mac8_datapath.sv"
+    - "mac8_sync.sv"
+    - "mac8_ctrl.sv"
+    - "tt_um_arnav_mac8.sv"
+
+# The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
+# This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
+# Labels are the docs/SPEC.md roles verbatim, with a bit index appended where a bus spans bits.
+pinout:
+  # Inputs
+  ui[0]: "Operand bus bit 0"
+  ui[1]: "Operand bus bit 1"
+  ui[2]: "Operand bus bit 2"
+  ui[3]: "Operand bus bit 3"
+  ui[4]: "Operand bus bit 4"
+  ui[5]: "Operand bus bit 5"
+  ui[6]: "Operand bus bit 6"
+  ui[7]: "Operand bus bit 7"
+
+  # Outputs
+  uo[0]: "Selected accumulator byte, registered, bit 0"
+  uo[1]: "Selected accumulator byte, registered, bit 1"
+  uo[2]: "Selected accumulator byte, registered, bit 2"
+  uo[3]: "Selected accumulator byte, registered, bit 3"
+  uo[4]: "Selected accumulator byte, registered, bit 4"
+  uo[5]: "Selected accumulator byte, registered, bit 5"
+  uo[6]: "Selected accumulator byte, registered, bit 6"
+  uo[7]: "Selected accumulator byte, registered, bit 7"
+
+  # Bidirectional pins
+  uio[0]: "Command bit 0"
+  uio[1]: "Command bit 1"
+  uio[2]: "Command bit 2"
+  uio[3]: "Strobe, async, synchronized inside"
+  uio[4]: "Busy"
+  uio[5]: "Overflow flag, sticky"
+  uio[6]: "Reserved, driven 0"
+  uio[7]: "Reserved, driven 0"
+
+# Do not change!
+yaml_version: 6
