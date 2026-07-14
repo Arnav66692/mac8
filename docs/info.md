@@ -49,3 +49,17 @@ The hardened macro on one Tiny Tapeout tile, sky130. The full die shows the stan
 | uio[5] | out | Overflow flag, sticky |
 | uio[7:6] | out | Reserved, driven 0 |
 | uo_out[7:0] | out | Selected accumulator byte, registered |
+
+## Reset path and polarity
+
+rst_n is active low the whole way, synchronous, with no inversion at any step. F2 was a reset bug, so the mapping is shown, not assumed.
+
+| Step | Signal | Polarity | Notes |
+|---|---|---|---|
+| Tiny Tapeout harness | rst_n | active low, 0 resets | harness convention |
+| Wrapper tt_um_arnav_mac8 | rst_n | active low | passed straight through, .rst_n(rst_n) to every instance |
+| u_sync | rst_n | active low | always_ff, if (!rst_n) clears ff1 ff2 ff3 seen_reset armed lock_cnt locked |
+| u_ctrl | rst_n | active low | always_ff, if (!rst_n) clears busy |
+| u_dp | rst_n | active low | always_ff, if (!rst_n) clears a_q b_q acc_q out_sel_q out_byte ovf |
+
+The reset is inside every clocked block, so it is synchronous, it acts on a rising clock edge only. Deassert is treated as synchronous per the spec. There is no reset synchronizer and none is needed, the harness deasserts cleanly and the arm bit covers the strobe artifacts. In the netlist the synchronous reset appears as an AND gate on each flop's D input, not a dedicated async reset pin, which is why the flops map to dfxtp, a plain flop, not a resettable dfrtp.
