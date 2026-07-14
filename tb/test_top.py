@@ -1,5 +1,6 @@
 # test_top.py
-# Protocol level tests for mac8_top. External ports only for stimulus.
+# Protocol level tests for tt_um_arnav_mac8, the module formerly named
+# mac8_top. External ports only for stimulus.
 # The driver obeys the SPEC.md rules. Data and command first, then the
 # strobe rise. Strobe high at least 3 core clocks, low at least 2 before
 # the next rise. Data stable while the strobe is high plus 2 clocks after
@@ -121,14 +122,26 @@ async def accept_busy_monitor(dut):
     WHITE BOX, reads u_sync.accept, observation only, not for gate level."""
     while True:
         await FallingEdge(dut.clk)
-        if int(dut.u_sync.accept.value) == 1:
+        try:
+            fired = int(dut.u_sync.accept.value)
+        except ValueError:
+            # X before reset resolves, outside this monitor's claim.
+            continue
+        if fired == 1:
             busy = (int(dut.uio_out.value) >> 4) & 1
             assert busy == 0, "accept fired while busy is high"
 
 
-@cocotb.test()
-async def test_reset_pin_state(dut):
-    """Reset pin state. uo_out 0, busy 0, ovf 0, uio_oe 11110000."""
+# Test partition, F6. The run_* coroutines below are PIN ONLY, they drive
+# and observe nothing but the external ports, so they run unchanged on the
+# gate level netlist. test/test.py imports and wraps them for the Tiny
+# Tapeout CI, at RTL and at gate level. The @cocotb.test wrappers here add
+# the white box monitors where they were, RTL only. Tests further down that
+# read internal hierarchy are WHITE BOX and stay in this suite only.
+
+
+async def run_reset_pin_state(dut):
+    """PIN ONLY. Reset pin state. uo_out 0, busy 0, ovf 0, uio_oe 11110000."""
     await start_and_reset(dut)
     await FallingEdge(dut.clk)
     uo, busy, ovf, low_nibble, reserved = pin_fields(dut)
@@ -141,8 +154,13 @@ async def test_reset_pin_state(dut):
 
 
 @cocotb.test()
-async def test_every_command_end_to_end(dut):
-    """Every command code through the pins. NOP included."""
+async def test_reset_pin_state(dut):
+    """Reset pin state, RTL wrapper for the pin only body."""
+    await run_reset_pin_state(dut)
+
+
+async def run_every_command_end_to_end(dut):
+    """PIN ONLY. Every command code through the pins. NOP included."""
     await start_and_reset(dut)
     golden = Golden()
 
@@ -175,6 +193,12 @@ async def test_every_command_end_to_end(dut):
     assert golden.acc == 0, "golden model self check failed"
 
 
+@cocotb.test()
+async def test_every_command_end_to_end(dut):
+    """Every command end to end, RTL wrapper for the pin only body."""
+    await run_every_command_end_to_end(dut)
+
+
 async def dot_product(dut, golden, pairs, tag):
     """The spec usage sequence. CLR, then LDA, LDB, MAC per element."""
     await command(dut, CMD_CLR)
@@ -200,10 +224,9 @@ async def dot_product(dut, golden, pairs, tag):
     return golden
 
 
-@cocotb.test()
-async def test_dot_product_usage(dut):
-    """Dot product of 24 elements per the spec usage section, then a
-    saturating variant with the ovf pin checked."""
+async def run_dot_product_usage(dut):
+    """PIN ONLY. Dot product of 24 elements per the spec usage section,
+    then a saturating variant with the ovf pin checked."""
     await start_and_reset(dut)
     golden = Golden()
     rng = random.Random(RANDOM_SEED)
@@ -224,13 +247,17 @@ async def test_dot_product_usage(dut):
 
 
 @cocotb.test()
-async def test_minimum_strobe_timing(dut):
-    """Exactly 3 high and 2 low, 50 commands back to back, all correct.
+async def test_dot_product_usage(dut):
+    """Dot product usage, RTL wrapper for the pin only body."""
+    await run_dot_product_usage(dut)
+
+
+async def run_minimum_strobe_timing(dut):
+    """PIN ONLY. Exactly 3 high and 2 low, 50 commands back to back.
 
     The data write and the strobe rise share one window, data written
     first, which is the minimum the driver rules allow."""
     await start_and_reset(dut)
-    monitor = cocotb.start_soon(accept_busy_monitor(dut))
     golden = Golden()
     rng = random.Random(RANDOM_SEED + 1)
 
@@ -241,6 +268,12 @@ async def test_minimum_strobe_timing(dut):
         golden = apply_command(golden, cmd, data)
         await check_pins(dut, golden, f"minimum timing command {i}, code {cmd}")
 
+
+@cocotb.test()
+async def test_minimum_strobe_timing(dut):
+    """Minimum strobe timing, RTL wrapper, adds the white box busy monitor."""
+    monitor = cocotb.start_soon(accept_busy_monitor(dut))
+    await run_minimum_strobe_timing(dut)
     monitor.cancel()
 
 
@@ -272,12 +305,10 @@ async def test_long_strobe_single_fire(dut):
     assert golden.acc == 15, "golden model self check failed"
 
 
-@cocotb.test()
-async def test_random_protocol_500(dut):
-    """500 random commands with random legal timing against the golden
-    model, uo_out and the ovf pin checked after every command."""
+async def run_random_protocol_500(dut):
+    """PIN ONLY. 500 random commands with random legal timing against the
+    golden model, uo_out and the ovf pin checked after every command."""
     await start_and_reset(dut)
-    monitor = cocotb.start_soon(accept_busy_monitor(dut))
     golden = Golden()
     rng = random.Random(RANDOM_SEED + 2)
 
@@ -291,8 +322,15 @@ async def test_random_protocol_500(dut):
         golden = apply_command(golden, cmd, data)
         await check_pins(dut, golden, f"random command {i}, code {cmd}")
 
-    monitor.cancel()
     dut._log.info(f"{RANDOM_CMDS} random commands done. final acc {golden.acc}")
+
+
+@cocotb.test()
+async def test_random_protocol_500(dut):
+    """Random protocol run, RTL wrapper, adds the white box busy monitor."""
+    monitor = cocotb.start_soon(accept_busy_monitor(dut))
+    await run_random_protocol_500(dut)
+    monitor.cancel()
 
 
 @cocotb.test()
