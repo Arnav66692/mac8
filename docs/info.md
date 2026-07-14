@@ -20,7 +20,7 @@ The design is frozen against its interface spec, v0.2, kept in the project repos
 
 Reset first. Hold the strobe low across reset release and for at least 3 clocks after it, the first command after reset needs the strobe observed low, then a fresh rise.
 
-Drive one command per strobe rise. Set uio[2:0] and ui_in first, then raise the strobe. Hold it high at least 3 clocks and low at least 2 before the next rise. Hold the command and data stable the whole time the strobe is high and for 2 clocks after it falls.
+Drive one command per strobe rise. Set uio[2:0] and ui_in first, then raise the strobe. Hold it high at least 3 clocks and low at least 2 before the next rise. Hold the command and data stable the whole time the strobe is high and for 2 clocks after it falls. Commands arriving while busy is high are ignored, dropped not deferred, so respect the spacing rules and busy never bites.
 
 Dot product of length N. CLR once. Per element, LDA x_i, then LDB w_i, then MAC. After the last element, SEL_LO, SEL_MID, SEL_HI, reading uo_out after each. Sample uo_out no earlier than 4 clocks after the SEL strobe rise. Reconstruct the 24 bit result from the three bytes and check the overflow flag on uio[5].
 
@@ -28,7 +28,7 @@ A quick smoke test. CLR, LDA 6, LDB 7, MAC, SEL_LO. uo_out reads 42.
 
 ## External hardware
 
-None required. Any microcontroller with 12 free GPIO pins can drive it, 8 outputs to ui_in, 4 to uio[3:0], and 2 inputs from uio[5:4] plus 8 from uo_out. At GPIO toggle speeds the strobe timing rules are met with huge margin.
+None required. Any microcontroller with 22 free GPIO pins can drive it, 8 outputs to ui_in, 4 outputs to uio[3:0], 2 inputs from uio[5:4], and 8 inputs from uo_out. At GPIO toggle speeds the strobe timing rules are met with huge margin.
 
 ## Pin map
 
