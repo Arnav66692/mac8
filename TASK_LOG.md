@@ -37,7 +37,17 @@ The review found a bug class the mutation gate is structurally blind to. The arm
 ## Verified facts, F1
 
 - Hardening numbers, from runs/wokwi/final/metrics.json of CI run 29308958917 at commit ca13138. Std cells 1181, sequential 61, total instances 3015 with fill and tap. Utilization 63.7 percent. Core area 16493 um2, die 17955 um2, fits 1x1. Setup WNS plus 0.695 ns at the worst corner, ss 100C 1v60 max, TNS 0 everywhere. Hold WNS plus 0.111 ns at ff n40C min, TNS 0. Magic DRC 0, KLayout checks clean, LVS 0, antenna 0.
-- 263 max slew violations at the ss 100C 1v60 corner only, worst 1.06 ns against a 0.75 ns pin limit, zero at tt and ff. Timing still met. Flagged for round two review.
+- 263 max slew violations at the ss 100C 1v60 corner only, worst 1.06 ns against a 0.75 ns pin limit, zero at tt and ff. Setup and hold still met. Flagged for round two review.
+
+## Finding 2 fix attempt, 2026-07-14, reverted, blocked on reviewer
+
+Tried the sanctioned lever, DESIGN_REPAIR_MAX_SLEW_PCT raised from 20 to 50, spending from the setup margin not the clock. It failed both ways. Setup broke, WNS went plus 0.695 to minus 0.530 ns at ss 100C 1v60, TNS minus 4.784, so 50 MHz no longer closes at the worst corner. And the slew count did not drop, still 263 at max ss, worse at min and nom ss. The margin knob repairs at the typical corner, these violations are at the slow corner, wrong lever. CI still went green because the flow does not fail on a slow corner setup violation, a vacuous green, caught by reading the metrics. Reverted config.json byte identical to the baseline, commit 472c1bf, confirmed setup plus 0.695 restored, slew 263, GL 6 of 6.
+
+The slew stays open, a signoff wart, not a flow error. The real lever is RSZ_CORNERS set to include ss 100C 1v60 so the resizer repairs slew at that corner directly, which costs area or setup margin, a PPA call for the reviewer. Not applied, the instruction was margin knobs then stop and report. Question for round two, accept the slow corner slew as is, or authorize RSZ_CORNERS and spend the area.
+
+## Render, 2026-07-14
+
+Two GDS shots in docs/, gds_full_die.png and gds_cell_rows.png, embedded in info.md, combined 412 KB, under the TT datasheet limit. The full die is the flow's own KLayout render, real sky130 colors. The zoom is a standalone klayout pymod render, monochrome. These are 2D layout renders, not the interactive 2.5D perspective. The macOS KLayout cask app cannot render headless, its Qt build is cocoa only with no offscreen plugin, so the GUI 2.5D view was not scriptable inside the time box. The pymod path rendered offscreen, no PDK color file was available locally to colorize the zoom.
 - GL suite 6 of 6 on the hardened netlist. It caught nothing RTL sim missed, the X out of reset class was the risk and the reset path held.
 - Doc cross check, mechanical plus two adversarial agents. Pin tables identical to SPEC character for character, all 24 yaml labels match. Two real doc bugs found and fixed, the GPIO count said 12 where the enumeration totals 22, and the busy drop rule was missing from info.md.
 - The template Makefile broke locally on the vault path spaces, fixed with relative paths, the standing trap.
