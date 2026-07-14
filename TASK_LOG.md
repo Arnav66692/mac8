@@ -11,6 +11,7 @@ Design and verify the int8 MAC block, then pass the P1 gates. Acceptance for the
 - [x] Reset arming fix, no phantom command, no replay.
 - [x] Both suites green. 9 datapath, 12 protocol.
 - [ ] Waveform walk with Surfer, one full transaction by hand.
+- [ ] Pre submission gate, freeze week. Full local precheck in the Nix shell, tt-support-tools precheck.py with Magic DRC and the pin and boundary suite, pinned PDK. The local KLayout DRC alone does not satisfy the local precheck requirement.
 - [ ] Explain phase with Arnav, every file and number.
 - [ ] Common FAQ and hard FAQ drills from the P1 note.
 - [ ] Closed book replication gate.
@@ -38,6 +39,14 @@ The review found a bug class the mutation gate is structurally blind to. The arm
 
 - Hardening numbers, from runs/wokwi/final/metrics.json of CI run 29308958917 at commit ca13138. Std cells 1181, sequential 61, total instances 3015 with fill and tap. Utilization 63.7 percent. Core area 16493 um2, die 17955 um2, fits 1x1. Setup WNS plus 0.695 ns at the worst corner, ss 100C 1v60 max, TNS 0 everywhere. Hold WNS plus 0.111 ns at ff n40C min, TNS 0. Magic DRC 0, KLayout checks clean, LVS 0, antenna 0.
 - 263 max slew violations at the ss 100C 1v60 corner only, worst 1.06 ns against a 0.75 ns pin limit, zero at tt and ff. Setup and hold still met. Flagged for round two review.
+
+## Round 1.5 follow up, keep attributes and bench refinement, 2026-07-14
+
+Keep ruling applied. keep on ff1 ff2 ff3 in the RTL only, hold fixing untouched, no dfrtp, sync reset stands. Flow rerun 29352875225 at e82437b, all jobs green. Netlist re verified, three distinct dfxtp_2 instances, one driver each, no merge, no replication. Full ff1 to ff2 path, _1614_ dfxtp_2 Q, u_sync.ff1 net, hold90 dlygate4sd3_1, net90, _1553_ and2_2 with rst_n on the A pin, _0053_, _1615_ dfxtp_2 D. Every baseline metric identical to the pre keep run, cells 1181, util 63.7 pct, setup WNS 0.695, hold WNS 0.111, slew 263, DRC LVS antenna 0, GL 9 of 9.
+
+STA extraction done, docs/CDC_MTBF.md created, values only under STA traceable inputs. ff1 to ff2 setup slack 18.632 ns at nom_tt, 17.458 ns at max_ss. Hold slack 0.789 and 1.840 ns. The derivation body stays pending Arnav's paste, status draft, tau and T0 pending sourcing.
+
+Bench refined per item 4. Probes the master latch storage node xdut.a_466_413#, chosen because the master cross coupled pair is a_466_413# and a_634_159#, the input tgate writes a_466_413# on CLK low and the clocked feedback holds it after the rising edge, so the dwell lives there. Q sits behind the slave tgate, an inverter, and the output buffer, which regenerate and hid the dwell, the flat column of the first sweep. Grid ladder locates the balance to sub fs, tt at 4.976707125 ns with a 5 ns clock edge. Log spaced fs offsets both sides, tight reltol 1e-6 abstol 1e-15 gear, single session per grid. tt sanity band passes, resolution grows as offset shrinks, about 0.10 ns per decade, 0.106 ns at 1000 fs to 0.467 ns at 1 fs. No tau fit, no T0, no MTBF text, those are Arnav's.
 
 ## F1.5 reviewer round, 2026-07-14, results
 
