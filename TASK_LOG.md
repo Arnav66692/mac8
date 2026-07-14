@@ -40,6 +40,16 @@ The review found a bug class the mutation gate is structurally blind to. The arm
 - Hardening numbers, from runs/wokwi/final/metrics.json of CI run 29308958917 at commit ca13138. Std cells 1181, sequential 61, total instances 3015 with fill and tap. Utilization 63.7 percent. Core area 16493 um2, die 17955 um2, fits 1x1. Setup WNS plus 0.695 ns at the worst corner, ss 100C 1v60 max, TNS 0 everywhere. Hold WNS plus 0.111 ns at ff n40C min, TNS 0. Magic DRC 0, KLayout checks clean, LVS 0, antenna 0.
 - 263 max slew violations at the ss 100C 1v60 corner only, worst 1.06 ns against a 0.75 ns pin limit, zero at tt and ff. Setup and hold still met. Flagged for round two review.
 
+## Metastability fit and bound, 2026-07-14
+
+Fit done, scripts/fit_tau.py, numpy polyfit on x equals ln(1 over offset), slope is tau, T0 equals exp(intercept over tau), relation stated in the script comment. tt tau 42.80 ps, T0 20.17 ps. ss tau 131.49 ps, T0 12.42 ps. Sanity gate passed, tt tau in the tens of ps band, proceeded.
+
+Finding, combined R squared reads 0.88 at both corners but per side fits are 0.998 to 0.999 with slopes agreeing within 5 percent. The penalty is branch asymmetry, the two resolve directions carry different T0, not nonlinearity. The model holds.
+
+Threshold derived at the signoff corner, ss. t 17.457877 ns from the STA table, f_clk 50 MHz, f_data 10 MHz worst legal, T0 12.42 ps. D 6210 per second, ln(A times D) 49.348, threshold tau 353.77 ps. Margin 2.69x over extracted ss tau, 2.64x against the worst per side value, and doubling T0 only moves the threshold to 349.30 ps. Values written to docs/CDC_MTBF.md under Extraction and bound, deliverable table at the top, MTBF argument heading left as a placeholder for Nav.
+
+Teaching written two tier, with and without background, vault note Chip Design Track/Projects/MAC8 Metastability Fit.md and Notion child page Metastability Fit under the build log. Replication gate written, docs/cdc/REPLICATE.md, thirteen boxes closed book.
+
 ## Round 1.5 follow up, keep attributes and bench refinement, 2026-07-14
 
 Keep ruling applied. keep on ff1 ff2 ff3 in the RTL only, hold fixing untouched, no dfrtp, sync reset stands. Flow rerun 29352875225 at e82437b, all jobs green. Netlist re verified, three distinct dfxtp_2 instances, one driver each, no merge, no replication. Full ff1 to ff2 path, _1614_ dfxtp_2 Q, u_sync.ff1 net, hold90 dlygate4sd3_1, net90, _1553_ and2_2 with rst_n on the A pin, _0053_, _1615_ dfxtp_2 D. Every baseline metric identical to the pre keep run, cells 1181, util 63.7 pct, setup WNS 0.695, hold WNS 0.111, slew 263, DRC LVS antenna 0, GL 9 of 9.
