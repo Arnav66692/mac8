@@ -44,7 +44,35 @@ python3 meta_bench.py tt > zoom_tt.csv
 Corners are tt at 1.80 V 25 C and ss at 1.60 V 100 C, pass the corner as the
 argument. The PDK comes from volare.
 
-## Sanity run result, tt, raw
+## Refined bench, round 1.5 item 4
+
+meta_bench.py now probes the master latch storage node, xdut.a_466_413#, not
+Q. The master cross coupled pair is a_466_413# and a_634_159#. The input
+transmission gate writes a_466_413# while CLK is low and the clocked feedback
+inverter holds it after the rising edge, so the metastable dwell lives there.
+Q sits behind the slave tgate, an inverter, and the output buffer, which
+regenerate and hide the dwell. That is why the first sweep read flat.
+
+A grid ladder locates the balance to sub femtosecond, four levels, 2 ps down
+to 0.25 fs steps. Then log spaced offsets on both sides, 1 fs to 1 ps, measure
+the resolution time, the last time the master node sits inside the 0.3 to 0.7
+vdd band after the clock edge. Tolerances reltol 1e-6, abstol 1e-15, gear
+integration, max step 0.5 ps, single session per grid.
+
+Results, committed with the measurement deck hash in the filename.
+
+- sweep_tt_94ab4266.csv, tt 1.80 V 25 C, balance at 4.976707125 ns against a
+  5 ns clock edge. Resolution 0.106 ns at 1000 fs, 0.467 ns at 1 fs.
+- sweep_ss_2160e2ac.csv, ss 1.60 V 100 C, balance from its own ladder.
+  Resolution 0.270 ns at 1000 fs, 1.364 ns at 1 fs.
+- balance_tt.log and balance_ss.log, the ladder convergence records.
+
+Both corners pass the sanity band, resolution grows as offset shrinks and is
+roughly linear against log offset, about 0.10 ns per decade at tt and about
+0.29 ns per decade at ss. The tau and T0 fit, the plot, and all MTBF text are
+Arnav's, this directory stops at the CSVs.
+
+## First sanity run result, Q probe, tt, raw, superseded
 
 sweep_tt_sanity.csv, 141 points, one session, about 95 seconds. Balance found
 at td 19.9765 ns. The capture flips cleanly there.
