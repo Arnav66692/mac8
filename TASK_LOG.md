@@ -83,6 +83,7 @@ At F8 the vault OPERATING_MANUAL.md, the v2, was gone. Only OPERATING_MANUAL_v1.
 
 ## Open questions
 
+- MTBF analysis, a gate list item from the design review. Status, drafted. Arnav derived it closed book, see the vault drill log. Placement into docs/CDC_MTBF.md and independent verification of every number are next, content arriving. Blocked on sourcing real sky130 tau and T0 from the standard cell characterization data. That sourcing is a question for the reviewer.
 - SPEC_NOTES.md holds the v0.2 queue, driver rule clarification and fused LDB_MAC. Not blocking.
 
 ## Resolved, repo location, 2026-07-13
