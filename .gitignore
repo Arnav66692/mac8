@@ -15,3 +15,6 @@ tt_submission
 src/user_config.json
 src/config_merged.json
 test/gate_level_netlist.v
+
+# macOS noise in any subdir
+**/.DS_Store
