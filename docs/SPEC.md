@@ -1,11 +1,13 @@
 ---
 tags: [chip-track, spec]
 project: P1
-version: "0.2"
+version: "0.3"
 status: frozen
 ---
 
-# MAC8 Interface Spec v0.2
+# MAC8 Interface Spec v0.3
+
+Changelog. 2026-07-14, v0.3 frozen, interface requirements formalized, no feature changes. Two prior driver rules became stated requirements with defined violation behavior and a named pinning test each, see Interface requirements below.
 
 Changelog. 2026-07-13, v0.2 frozen, clarifications only, no feature changes. Three additions. A SEL read rule. A reset strobe low rule with the measured arm time. The nominal clock.
 
@@ -60,6 +62,17 @@ Driver rules:
 3. Hold ui_in and uio[2:0] stable the whole time strobe is high and for 2 clocks after it falls.
 
 Commands arriving while busy is high are ignored. A ringing or slow strobe edge that crosses the threshold twice fires only once. The design ignores further accepts for 4 clocks after any accept, and the minimum legal rise to rise spacing is 5 clocks, so a compliant driver never loses a command. At demo board speeds, an MCU toggling GPIO, these numbers are trivially met.
+
+## Interface requirements
+
+These were driver guidance in v0.2. In v0.3 they are stated requirements with defined violation behavior and a pinning test each. Clocks are core clocks at 50 MHz, 20 ns each.
+
+| Requirement | Value | Violation behavior | Pinning test |
+|---|---|---|---|
+| Rise to rise spacing | at least 5 clocks between strobe rises | A rise whose accept would land inside the 4 clock lockout after a prior accept is ignored, no command fires from it | test_lockout_boundary_gl |
+| Data setup and hold | ui_in and uio[2:0] stable from before the strobe rise, through the whole high time, and for 2 clocks after the fall | Data changed inside that window can be captured or missed, the command latches an undefined value, outside the window it has no effect | test_data_hold_window |
+
+Both pinning tests are pin only and run on the hardened gate level netlist, not just RTL.
 
 ## Read rule
 
