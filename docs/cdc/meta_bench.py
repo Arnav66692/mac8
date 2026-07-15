@@ -30,7 +30,17 @@ CORNERS = {"tt": (1.80, 25, "tt"), "ss": (1.60, 100, "ss")}
 TCLK = 5.0e-9
 TSTOP = 13.0e-9
 TSTEP = 0.2e-12
-TMAX = 0.5e-12
+
+# Round two overrides, env vars, defaults reproduce the original decks
+# exactly. EDGE_CLK and EDGE_D are PWL rise times in seconds, the original
+# bench used 20 ps convenience edges on both. RELTOL, TRAN_TMAX, METHOD are
+# the solver check knobs. The deck text carries every value, so the deck
+# hash changes whenever any override changes, provenance holds.
+TMAX = float(os.environ.get("TRAN_TMAX", "0.5e-12"))
+EDGE_CLK = float(os.environ.get("EDGE_CLK", "20e-12"))
+EDGE_D = float(os.environ.get("EDGE_D", "20e-12"))
+RELTOL = os.environ.get("RELTOL", "1e-6")
+METHOD = os.environ.get("METHOD", "gear")
 
 
 def build_deck(corner, td_list, outdir):
@@ -45,11 +55,11 @@ def build_deck(corner, td_list, outdir):
         "Vgnd VGND 0 0",
         f"Vpb  VPB  0 {vdd}",
         "Vnb  VNB  0 0",
-        f"Vclk CLK 0 PWL(0 0 {TCLK:.6e} 0 {TCLK+20e-12:.6e} {vdd})",
-        "Vd   D 0 PWL(0 0 {td} 0 {td+20p} " + f"{vdd})",
+        f"Vclk CLK 0 PWL(0 0 {TCLK:.6e} 0 {TCLK+EDGE_CLK:.6e} {vdd})",
+        "Vd   D 0 PWL(0 0 {td} 0 {td+" + f"{EDGE_D*1e12:g}p" + "} " + f"{vdd})",
         f"Xdut CLK D VGND VNB VPB VPWR Q {SUBCKT}",
         "Cload Q 0 5f",
-        f".options temp={temp} reltol=1e-6 abstol=1e-15 vntol=1e-9 method=gear",
+        f".options temp={temp} reltol={RELTOL} abstol=1e-15 vntol=1e-9 method={METHOD}",
         ".control",
     ]
     for i, td in enumerate(td_list):

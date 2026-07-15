@@ -29,6 +29,24 @@ No deterministic simulation can see this. Sim collapses the 2 to 3 latency range
 
 One arithmetic correction against the review text, reported, not silently fixed. The worst legal accept spacing is 4 clocks, not 2. Latency jitter is at most 1 clock, so 5 minus 1 is 4. The fix is identical either way. Terminal 2'd2, a 3 clock window, blocks offsets 1 through 3, passes offset 4. Ring coverage holds, the earliest second synchronized edge from one physical strobe needs ff2 low for a cycle, offset 2, inside 3. Any later re crossing violates the high 3 low 2 pulse shape and is a second pulse, out of contract.
 
+A consequence found while re deriving the ring arithmetic. The old GL ring test drove a bounce with rises 4 clocks apart, which the old window blocked and the new window passes by design. The pattern tightened to rises 3 apart, and the rewritten lockout test pins the exact window edges in deterministic sim, offset 3 blocked, offset 4 passes, offset 5 passes. The offset 4 row kills a mutation reverting the window to 4. Mutation runs, revert to 2'd3 fails the offset 4 row, lockout removed fails both ring tests. Both killed.
+
+## Reasoned event, 2026-07-15, rst_n is asynchronous at the pad, two sources
+
+The round two rst_n question resolved against the easy path. The Tiny Tapeout clock spec states, both the clk and rst_n pins are handled like any other input pins, source tinytapeout.com/specs/clock, file content/specs/clock/_index.md in the tinytapeout_www repo. The harness RTL confirms it, tt-multiplexer rtl/tt_user_module.v.mak line 53, assign uio_in ui_in rst_n clk equals iw, the user rst_n arrives in the same input bundle as ordinary inputs, no synchronizer in the spine. So the spec's old line, deassert treated as synchronous, was an assumption the harness does not back.
+
+Fix per the ruling. mac8_rst_sync, two plain flops with keep, no reset on themselves, instantiated in the top, no module sees the raw pad. Assertion and release reach the core 2 clocks after the pad. Driver counts moved in spec v0.4, hold rst_n low at least 3 clocks, hold strobe low at least 5 clocks after release, the derived hard floor is 3. This class is review driven, deterministic sim cannot express an async reset edge race, same blind spot as F2 and the lockout width. Reset release happens about once per session, so the MTBF of this crossing sits far beyond the strobe path bound. start_and_reset and the GL reset boundary probe updated to the new counts, in flight cancel docstring updated, the command can execute inside the 2 clock crossing window and is then wiped, identical through the pins.
+
+## Extraction hardening, round two items 7 to 9, 2026-07-15
+
+Provenance first, a real finding. The extracted cell file dfxtp_2.spice was never committed and no longer existed on disk, the deck hash pinned a path string, exactly the reviewer's attack. Re extracted from the PDK, 28 lines, committed at docs/cdc/dfxtp_2.spice, sha256 26e32b3c4f62819c2253c4ebded610e5a6a9faca3c68875c5820c364c1551632. PDK source sky130_fd_sc_hd.spice sha256 6dec6626decd1ee15afacafab9925b1a336ab344b7b5e1bec9d7483f2a6badc3, volare, open_pdks c6d73a35.
+
+Slew rerun, item 7. Real stimulus slews pulled from the hardened netlist STA, ff1 CLK 75.907 ps and D 69.337 ps at ss, in place of the 20 ps convenience edges. Combined tau 131.49 to 131.02 ps, 0.4 percent. T0 12.42 to 16.25 ps, inside a log. Sweep committed, sweep_ss_0fcc822d.csv. tau does not depend on convenient stimulus.
+
+Solver check, item 9. reltol 1e-7, max step halved to 0.25 ps, trap for gear. Combined tau 131.42 ps, under 0.1 percent from baseline. Sweep committed, sweep_ss_f6bb1d1f.csv. Physics, not integrator artifact.
+
+meta_bench.py gained env overrides for edges and solver, defaults reproduce the original decks byte for byte. Worst per side tau across all three ss runs stays 134.19 ps from the baseline, the conservative headline pair holds.
+
 ## MTBF argument placed, 2026-07-14
 
 Nav delivered the spoken MTBF argument paragraph. Placed verbatim into docs/CDC_MTBF.md under the heading MTBF for the strobe synchronizer, replacing the placeholder. No rewording, it is his.

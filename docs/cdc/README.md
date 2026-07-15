@@ -72,6 +72,29 @@ roughly linear against log offset, about 0.10 ns per decade at tt and about
 0.29 ns per decade at ss. The tau and T0 fit, the plot, and all MTBF text are
 Arnav's, this directory stops at the CSVs.
 
+## Round two hardening, provenance and robustness
+
+Provenance. The extracted cell netlist is now committed, dfxtp_2.spice in
+this directory, 28 lines, so CELL_SPICE points at a versioned file, not a
+path that can drift. It is the dfxtp_2 subckt cut from the PDK combined
+cell library. Hashes in docs/CDC_MTBF.md, deliverable table. The deck hash
+in each CSV filename covers the full deck text, which includes every
+stimulus and solver value.
+
+Overrides. meta_bench.py takes env vars, defaults reproduce the original
+decks exactly. EDGE_CLK and EDGE_D, PWL rise times in seconds. RELTOL,
+TRAN_TMAX, METHOD, the solver knobs.
+
+Two ss robustness reruns, both committed.
+
+- sweep_ss_0fcc822d.csv, real stimulus slews from the hardened netlist STA,
+  CLK 75.907 ps and D 69.337 ps in place of the 20 ps convenience edges.
+  Combined tau moved 131.49 to 131.02 ps, 0.4 percent. The extraction does
+  not depend on convenient stimulus.
+- sweep_ss_f6bb1d1f.csv, solver check, reltol 1e-7, max step halved to
+  0.25 ps, trap in place of gear. Combined tau moved 131.49 to 131.42 ps,
+  under 0.1 percent. The number is physics, not an integrator artifact.
+
 ## First sanity run result, Q probe, tt, raw, superseded
 
 sweep_tt_sanity.csv, 141 points, one session, about 95 seconds. Balance found
