@@ -51,15 +51,20 @@ _phase_logged = False
 
 
 async def start_and_reset(dut):
-    """Start the clock and apply synchronous reset for three cycles."""
+    """Start the clock and apply reset per the v0.4 reset rule.
+
+    rst_n crosses a two flop synchronizer inside the design, round two item
+    6, so assertion needs 3 clocks to act, 2 to cross plus 1 to clear, and
+    the arm settles on the fifth clock after pad release. Hold reset low 4
+    clocks, then hold strobe low 5 clocks after release before any rise."""
     cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, "ns").start())
     dut.ena.value = 1
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     dut.rst_n.value = 0
-    await ClockCycles(dut.clk, 3)
+    await ClockCycles(dut.clk, 4)
     dut.rst_n.value = 1
-    await ClockCycles(dut.clk, 2)
+    await ClockCycles(dut.clk, 5)
 
 
 async def command(dut, cmd, data=0, high=3, low=2, setup=1):
@@ -552,8 +557,11 @@ async def test_reset_replay(dut):
 
 @cocotb.test()
 async def test_in_flight_cancel(dut):
-    """A reset in the 1 to 2 clock window after the external edge, before
-    the accept would fire, cancels the command. It never executes."""
+    """A reset right after the external edge leaves clean reset state. With
+    the round two reset synchronizer the pad assert lands internally 2
+    clocks later, so the command can execute in that crossing window and is
+    then wiped by the internal reset. Through the pins the outcome is
+    identical, no accept after release, state is clean reset."""
     await start_and_reset(dut)
 
     # Load real operands so a stray MAC would move acc off 0.

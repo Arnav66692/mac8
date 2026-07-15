@@ -10,15 +10,15 @@ You can also include images in this folder and reference them in the markdown. E
 
 MAC8 is a serial signed multiply accumulate unit, one step of a dot product per command. It multiplies two 8 bit signed operands into a 16 bit product and accumulates into a 24 bit signed accumulator, saturating at 8388607 and minus 8388608. Saturation sets a sticky overflow flag that only CLR clears. The accumulator reads out one byte at a time through a select register.
 
-Inside there are three blocks. A synchronizer takes the asynchronous strobe through two flops, detects the rising edge, and fires one accept pulse per external edge, 2 to 3 core clocks after it. An arm bit blocks any accept until the strobe has been observed low after reset, and a lockout ignores further accepts for 4 clocks after any accept, so a slow or ringing strobe edge cannot fire twice. A decoder turns the accepted command code into exactly one control pulse. The datapath holds all data state and does the arithmetic.
+Inside there are four blocks. A synchronizer takes the asynchronous strobe through two flops, detects the rising edge, and fires one accept pulse per external edge, 2 to 3 core clocks after it. An arm bit blocks any accept until the strobe has been observed low after reset, and a lockout ignores further accepts for 3 clocks after any accept, so a slow or ringing strobe edge cannot fire twice while a legal command at the worst async alignment still lands. A reset synchronizer takes the asynchronous rst_n pad through two flops before any module sees it. A decoder turns the accepted command code into exactly one control pulse. The datapath holds all data state and does the arithmetic.
 
 Commands on uio[2:0], executed on strobe rise. 000 NOP. 001 CLR, accumulator and overflow flag to 0. 010 LDA and 011 LDB latch ui_in as signed operands. 100 MAC computes acc plus A times B with saturation. 101, 110, 111 select the low, middle, or high accumulator byte on uo_out.
 
-The design is frozen against its interface spec, v0.2, kept in the project repository at docs/SPEC.md. The clock is 50 MHz nominal.
+The design is frozen against its interface spec, kept in the project repository at docs/SPEC.md, the version lives inside the file. The clock is 50 MHz nominal.
 
 ## How to test
 
-Reset first. Hold the strobe low across reset release and for at least 3 clocks after it, the first command after reset needs the strobe observed low, then a fresh rise.
+Reset first. Hold rst_n low at least 3 clocks. Hold the strobe low across reset release and for at least 5 clocks after it, the release crosses a 2 clock synchronizer and the arm settles 3 clocks later. The first command after reset needs the strobe observed low, then a fresh rise.
 
 Drive one command per strobe rise. Set uio[2:0] and ui_in first, then raise the strobe. Hold it high at least 3 clocks and low at least 2 before the next rise. Hold the command and data stable the whole time the strobe is high and for 2 clocks after it falls. Commands arriving while busy is high are ignored, dropped not deferred, so respect the spacing rules and busy never bites.
 
@@ -52,14 +52,15 @@ The hardened macro on one Tiny Tapeout tile, sky130. The full die shows the stan
 
 ## Reset path and polarity
 
-rst_n is active low the whole way, synchronous, with no inversion at any step. F2 was a reset bug, so the mapping is shown, not assumed.
+rst_n is active low the whole way, with no inversion at any step. F2 was a reset bug, so the mapping is shown, not assumed.
 
 | Step | Signal | Polarity | Notes |
 |---|---|---|---|
-| Tiny Tapeout harness | rst_n | active low, 0 resets | harness convention |
-| Wrapper tt_um_arnav_mac8 | rst_n | active low | passed straight through, .rst_n(rst_n) to every instance |
+| Tiny Tapeout harness | rst_n | active low, 0 resets | harness convention, handled like any other input pin, asynchronous |
+| Wrapper tt_um_arnav_mac8 | rst_n | active low | into u_rst_sync only, no module sees the raw pad |
+| u_rst_sync | rst_n_pad to rst_n_sync | active low | two plain flops, no reset on themselves, 2 clock crossing |
 | u_sync | rst_n | active low | always_ff, if (!rst_n) clears ff1 ff2 ff3 seen_reset armed lock_cnt locked |
 | u_ctrl | rst_n | active low | always_ff, if (!rst_n) clears busy |
 | u_dp | rst_n | active low | always_ff, if (!rst_n) clears a_q b_q acc_q out_sel_q out_byte ovf |
 
-The reset is inside every clocked block, so it is synchronous, it acts on a rising clock edge only. Deassert is treated as synchronous per the spec. There is no reset synchronizer and none is needed, the harness deasserts cleanly and the arm bit covers the strobe artifacts. In the netlist the synchronous reset appears as an AND gate on each flop's D input, not a dedicated async reset pin, which is why the flops map to dfxtp, a plain flop, not a resettable dfrtp.
+The reset is inside every clocked block, so it is synchronous, it acts on a rising clock edge only. The pad rst_n is asynchronous, the Tiny Tapeout clock spec handles clk and rst_n like any other input pins, so the design synchronizes it through two flops before use, review round two. Assertion and release reach the core 2 clocks after the pad. In the netlist the synchronous reset appears as an AND gate on each flop's D input, not a dedicated async reset pin, which is why the flops map to dfxtp, a plain flop, not a resettable dfrtp.

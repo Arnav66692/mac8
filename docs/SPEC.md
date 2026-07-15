@@ -7,7 +7,7 @@ status: frozen
 
 # MAC8 Interface Spec v0.4
 
-Changelog. 2026-07-15, v0.4 frozen, no feature changes. The lockout width corrected from 4 clocks to 3 after the round two review, a 4 clock window ate a legal command at worst async alignment. One added sentence, spacing is measured in core clocks and an asynchronous driver owns its own frequency error against those clocks.
+Changelog. 2026-07-15, v0.4 frozen, no feature changes, two round two corrections. First, the lockout width corrected from 4 clocks to 3, a 4 clock window ate a legal command at worst async alignment. One added sentence, spacing is measured in core clocks and an asynchronous driver owns its own frequency error against those clocks. Second, rst_n is now synchronized inside the design. The Tiny Tapeout harness handles clk and rst_n like any other input pins, its clock spec says so, so rst_n at the pad is asynchronous. A two flop synchronizer was added, and the reset rule clock counts moved by the 2 clock crossing.
 
 Changelog. 2026-07-14, v0.3 frozen, interface requirements formalized, no feature changes. Two prior driver rules became stated requirements with defined violation behavior and a named pinning test each, see Interface requirements below.
 
@@ -21,7 +21,7 @@ A serial signed multiply accumulate unit. 8 bit signed times 8 bit signed, accum
 
 ## Signals from the Tiny Tapeout harness
 
-clk, the core clock, 50 MHz nominal on the Tiny Tapeout harness. rst_n, active low reset, deassert treated as synchronous. ena, high when this design is selected, ignored internally in v0.1. ui_in[7:0], dedicated inputs. uo_out[7:0], dedicated outputs. uio[7:0], bidirectional with direction set statically by the design.
+clk, the core clock, 50 MHz nominal on the Tiny Tapeout harness. rst_n, active low reset, asynchronous at the pad. The Tiny Tapeout clock spec states that both the clk and rst_n pins are handled like any other input pins, no harness synchronization, tinytapeout.com/specs/clock. The design synchronizes rst_n through two flops, assertion and release reach the core 2 clocks after the pad. ena, high when this design is selected, ignored internally in v0.1. ui_in[7:0], dedicated inputs. uo_out[7:0], dedicated outputs. uio[7:0], bidirectional with direction set statically by the design.
 
 ## Pin map
 
@@ -86,7 +86,7 @@ acc 0. Overflow flag 0. Busy 0. Output select LO. uo_out 0.
 
 ## Reset rule
 
-Hold strobe low across reset release. The first command after reset requires strobe observed low, then a fresh rise. Hold strobe low at least 3 clocks after release before that first rise. The arm settles on the third post reset clock. The measured hard floor is 1 clock, and a rise at release itself is read as strobe high across reset and dropped.
+Hold rst_n low at least 3 clocks for the reset to take effect, 2 to cross the internal synchronizer and 1 to act. Hold strobe low across reset release. The first command after reset requires strobe observed low, then a fresh rise. Hold strobe low at least 5 clocks after release before that first rise. The release crosses the 2 clock synchronizer, then the arm settles 3 internal clocks later, the fifth clock after the pad release. The derived hard floor is 3 clocks, and a rise at release itself is read as strobe high across reset and dropped. Counts before v0.4 were 3 and 1, measured without the reset synchronizer.
 
 ## Timing
 

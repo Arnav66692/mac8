@@ -149,6 +149,13 @@ async def test_reset_release_strobe_high_gl(dut):
         assert ovf == 0, f"reset strobe high hold {hold_clocks}. ovf high"
         assert int(dut.uio_oe.value) == 0xF0, "uio_oe wrong after reset"
 
+        # Reset rule v0.4. The pad release crosses the two flop reset
+        # synchronizer, so the arm settles on the fifth post release clock.
+        # Drop the strobe and wait that out before probing, otherwise the
+        # probe commands are dropped and the probe reads vacuously.
+        dut.uio_in.value = 0
+        await ClockCycles(dut.clk, 5)
+
         # Zero accept probe. Drop the strobe so the arm can set, then a legal
         # LDB 1, MAC, SEL_LO. If a phantom LDA loaded A to 0x7F, acc reads 127.
         # If clean, A stayed 0 and acc reads 0.

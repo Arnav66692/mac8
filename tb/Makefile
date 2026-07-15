@@ -38,6 +38,7 @@ endif
 
 ifeq ($(TB),top)
 VERILOG_SOURCES += ../src/mac8_sync.sv
+VERILOG_SOURCES += ../src/mac8_rst_sync.sv
 VERILOG_SOURCES += ../src/mac8_ctrl.sv
 VERILOG_SOURCES += ../src/tt_um_arnav_mac8.sv
 VERILOG_SOURCES += dump_top.sv

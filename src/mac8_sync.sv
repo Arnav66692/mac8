@@ -7,14 +7,15 @@
 //
 // Reset is synchronous, active low. It clears every flop, including armed
 // and the lockout. After reset, the first command requires strobe low then
-// a fresh rise. The arm settles on the third post reset clock, so hold
-// strobe low at least 3 clocks across reset release before the first rise,
-// one more than the 2 clock steady state low time. The measured hard floor
-// is 1 clock, a rise at reset release itself is read as strobe high across
-// reset and is dropped. The arm bit blocks accept until the real strobe has been
-// observed low once, post reset. This kills two reset artifacts. A strobe
-// held high across reset release no longer fires a phantom command. A reset
-// pulse during a legal strobe no longer replays the in flight command.
+// a fresh rise. The arm settles on the third clock after this module's
+// rst_n releases. That rst_n is the synchronized reset from mac8_rst_sync,
+// round two item 6, which adds 2 clocks from the pad. Driver facing counts
+// live in the spec, hold strobe low at least 5 clocks after pad release,
+// the derived hard floor is 3. The arm bit blocks accept until the real
+// strobe has been observed low once, post reset. This kills two reset
+// artifacts. A strobe held high across reset release no longer fires a
+// phantom command. A reset pulse during a legal strobe no longer replays
+// the in flight command.
 //
 // F2 review fix. The arm enable samples ff2, the settled flop, never ff1.
 // Only ff2 and later flops may feed logic, ff1 can be metastable. Review

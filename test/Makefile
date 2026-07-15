@@ -11,7 +11,7 @@ SRC_DIR = ../src
 
 # The pin only tests import shared bodies and the golden model from ../tb
 export PYTHONPATH := ../tb
-PROJECT_SOURCES = mac8_datapath.sv mac8_sync.sv mac8_ctrl.sv tt_um_arnav_mac8.sv
+PROJECT_SOURCES = mac8_datapath.sv mac8_sync.sv mac8_rst_sync.sv mac8_ctrl.sv tt_um_arnav_mac8.sv
 
 ifneq ($(GATES),yes)
 

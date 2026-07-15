@@ -19,6 +19,7 @@ project:
   source_files:
     - "mac8_datapath.sv"
     - "mac8_sync.sv"
+    - "mac8_rst_sync.sv"
     - "mac8_ctrl.sv"
     - "tt_um_arnav_mac8.sv"
 
