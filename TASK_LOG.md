@@ -19,7 +19,15 @@ Design and verify the int8 MAC block, then pass the P1 gates. Acceptance for the
 
 ## Now
 
-Implementing the design review gate list, F2 through F5 plus test upgrades. F1, the Tiny Tapeout integration, is its own task this week.
+MTBF argument placed and verified, docs/CDC_MTBF.md is complete. Open, the pre submission Nix precheck in freeze week, the waveform walk, the remaining drills, the replication gates, RTL freeze with Dad, and the round two review.
+
+## MTBF argument placed, 2026-07-14
+
+Nav delivered the spoken MTBF argument paragraph. Placed verbatim into docs/CDC_MTBF.md under the heading MTBF for the strobe synchronizer, replacing the placeholder. No rewording, it is his.
+
+Verified every number independently before placing. Test count gate first, 22 white box, 9 datapath and 13 protocol, plus 9 gate level, matches the paragraph. The 14th cocotb decorator grep hit is a comment line, not a test. Recomputed the bound from scratch. D 6210 per second from T0 12.42 ps times 50 MHz times 10 MHz. ln(A times D) 49.348. Threshold 353.77 ps at the exact t 17.457877 ns, 353.8 ps at the paragraph rounded 17.46 ns. Ratio 2.690 over extracted ss tau 131.49 ps. Reran scripts/fit_tau.py, tt tau 42.80 T0 20.17, ss tau 131.49 T0 12.42, matches the paragraph rounding. Doubling T0 moves the threshold 1.39 percent, inside the paragraph's about 1 percent. No number disagreed.
+
+Marked the deliverable complete, frontmatter status, intro flag, and a new deliverable table row. Surfaces mirrored as status flips only, not the prose, the Obsidian fit note, the P1 note, and the Notion build log.
 
 ## Reasoned event, 2026-07-13, F2 is review driven not test driven
 

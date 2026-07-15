@@ -1,13 +1,13 @@
 ---
 tags: [chip-track, cdc]
 project: P1
-status: draft, constants extracted, MTBF argument pending Nav
+status: complete, constants extracted, MTBF argument written
 ---
 
 # CDC MTBF
 
 Constants extracted from the bench, threshold derived, values below. The
-spoken MTBF argument is Nav's to write, placeholder heading at the bottom.
+spoken MTBF argument is written in the section at the bottom.
 
 ## Deliverables
 
@@ -24,6 +24,7 @@ spoken MTBF argument is Nav's to write, placeholder heading at the bottom.
 | tau at ss 100C 1v60 | 131.49 ps, R squared 0.8914 combined, 0.9978 and 0.9991 per side |
 | T0 at ss 100C 1v60 | 12.42 ps |
 | Signoff corner | ss 100C 1v60, all bound numbers below use it |
+| MTBF argument | written, section MTBF for the strobe synchronizer below |
 
 ## STA traceable inputs
 
@@ -106,4 +107,30 @@ Steps.
 | Margin against the worst per side ss tau, 134.19 ps | 2.64x |
 | Threshold if T0 doubles to 23.34 ps | 349.30 ps, the exponent dominates |
 
-## MTBF argument, to be written by Nav
+## MTBF for the strobe synchronizer
+
+This analysis proves the physical metastability margin of the strobe synchronizer. It does not prove the RTL protocol. RTL simulation resolves deterministically and cannot exhibit metastability, so the 22 white-box tests and 9 gate-level tests prove protocol behavior and this analysis proves the physics.
+
+The standard estimate is:
+
+MTBF = e^(t/tau) / (T0 · f_clk · f_data)
+
+Here, t is the settling time the design grants ff1 before ff2 samples it. tau is the metastability resolution time constant of the flop. T0 is the effective metastability window of the flop. f_clk is the sampling clock frequency. f_data is the asynchronous input transition rate.
+
+Use signoff numbers, not convenient numbers. The settling time t is the STA setup slack on the ff1 to ff2 path from the hardened netlist, 17.46 ns at the ss signoff corner. That slack already includes the inserted hold buffer and the reset AND gate, so those cells are priced into the margin. The clock is 50 MHz. The async transition rate is 10 MHz, one legal strobe rise every five clocks, the worst the spec permits. That is worst legal traffic, not typical demo-board traffic, so it makes the answer more pessimistic.
+
+The flop parameters are extracted, not looked up, because no foundry ships them directly. The extracted values are tau 42.8 ps and T0 20.2 ps at nominal, and tau 131.5 ps and T0 12.4 ps at the ss corner. The extraction method is SPICE on the exact dfxtp_2 cell from the netlist, probing the master latch node, with the deck hash recorded in the deliverable table.
+
+Use this as a bound, not just a point estimate. The question is how bad tau could be before the MTBF drops below the age of the universe. Solve:
+
+tau_threshold = t / ln(age_of_universe · T0 · f_clk · f_data)
+
+Using the ss corner denominator from the report, T0 · f_clk · f_data = 6210 per second, and the age of the universe, 4.35e17 seconds, the threshold is:
+
+tau_threshold = 17.46 ns / ln((4.35e17) · 6210) = 353.8 ps
+
+The extracted ss value is tau 131.5 ps, so the real extracted value is 353.8 / 131.5 = 2.69 times inside the threshold. The design outlives the age of the universe for any tau below 353.8 ps, and the extracted ss value has a factor of 2.69 margin to that limit.
+
+The result is also insensitive to T0. T0 sits inside a logarithm, so even a 2x error in it moves the threshold by about 1 percent. The bound does not rest on precise silicon numbers.
+
+This is still an analysis, not measured silicon. SPICE is not silicon, and the real number would require measured foundry data or a metastability test structure, which this project did not build because there is one flagship. But the margin is large enough that the conclusion survives that gap.
