@@ -19,7 +19,13 @@ Design and verify the int8 MAC block, then pass the P1 gates. Acceptance for the
 
 ## Now
 
-Round three. Close the async latency dimension, formal proof preferred, exhaustive sweep as the concrete backstop, then the review paperwork. Held from round two, the rsz-corners adoption decision. Open after that, the pre submission Nix precheck in freeze week, the waveform walk, the remaining drills, the replication gates, RTL freeze with Dad.
+Round four. Closed a coverage hole in the round three formal proof, then the round three review's small findings and a wording sweep. Held from round two, the rsz-corners adoption decision. Open after that, the pre submission Nix precheck in freeze week, the waveform walk, the remaining drills, the replication gates, RTL freeze with Dad.
+
+## Reasoned event, 2026-07-15, the proof certified a window it never watched
+
+The round three formal proof passed, and it had a hole. The assertions were gated at boot 16, but legal rises start at boot 9, so the first handshake after reset, rise at 9 and its accept at 11 or 12, was never observed. That window, cycles 9 to 15, is the exact place F2 lived, the arm transient right after reset release. Worse, the obligation counter was 2 bits and wrapped, so a phantom accept in the blind window could be laundered by modular arithmetic back to a legal value before the gate opened. The proof was sound for what it watched and silent on the one window that mattered most. A proof that does not observe a cycle proves nothing about it, and passing is not the same as covering.
+
+The fix is three changes to the harness, none to the DUT. The assertion window now opens at rst_n deassert, so every live cycle including the arm transient is watched. The obligation counter saturates instead of wrapping, and three sticky flags latch any phantom, double, or busy block forever, so no later arithmetic can hide a violation and induction cannot start from a laundered state. cmd is now free, so P4 holds for every command, not only MAC. Reran, BMC to depth 60 passed, temporal induction closed at step 23, unbounded, deeper than the prior 13 because the sticky state is larger, and the vacuity probe still fails as it must. A forced phantom accept injected at boot 7, inside the old blind window, is now caught at boot 7 by the phantom assertion, where before the window opened seven cycles too late. The dimension is closed and now the proof actually watches the release edge.
 
 ## Reasoned event, 2026-07-15, one unverified dimension, not three bugs
 
