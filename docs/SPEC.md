@@ -7,7 +7,7 @@ status: frozen
 
 # MAC8 Interface Spec v0.4
 
-Changelog. 2026-07-15, v0.4 frozen, no feature changes, two round two corrections. First, the lockout width corrected from 4 clocks to 3, a 4 clock window ate a legal command at worst async alignment. One added sentence, spacing is measured in core clocks and an asynchronous driver owns its own frequency error against those clocks. Second, rst_n is now synchronized inside the design. The Tiny Tapeout harness handles clk and rst_n like any other input pins, its clock spec says so, so rst_n at the pad is asynchronous. A two flop synchronizer was added, and the reset rule clock counts moved by the 2 clock crossing.
+Changelog. 2026-07-15, v0.4 frozen, no feature changes, two round two corrections. First, the lockout width corrected from 4 clocks to 3, a 4 clock window ate a legal command at worst async alignment. One added sentence, spacing is measured in core clocks and an asynchronous driver owns its own frequency error against those clocks. Second, rst_n is now synchronized inside the design. The Tiny Tapeout harness handles clk and rst_n like any other input pins, its clock spec says so, so rst_n at the pad is asynchronous. A two flop synchronizer was added, and the reset rule clock counts moved by the 2 clock crossing. After the round three proof the lockout violation row is stated as best effort, resolution dependent below the legal spacing, wording only.
 
 Changelog. 2026-07-14, v0.3 frozen, interface requirements formalized, no feature changes. Two prior driver rules became stated requirements with defined violation behavior and a named pinning test each, see Interface requirements below.
 
@@ -63,7 +63,7 @@ Driver rules:
 2. Hold strobe high at least 3 core clocks. Hold it low at least 2 before the next rise.
 3. Hold ui_in and uio[2:0] stable the whole time strobe is high and for 2 clocks after it falls.
 
-Commands arriving while busy is high are ignored. A ringing or slow strobe edge that crosses the threshold twice fires only once. The design ignores further accepts for 3 clocks after any accept, and the minimum legal rise to rise spacing is 5 clocks, so a compliant driver never loses a command, including at the worst async alignment where accepts from two legal rises land 4 clocks apart. At demo board speeds, an MCU toggling GPIO, these numbers are trivially met.
+Commands arriving while busy is high are ignored. A ringing or slow strobe edge that crosses the threshold twice fires only once. The design ignores further accepts for 3 clocks after any accept, and the minimum legal rise to rise spacing is 5 clocks, so a compliant driver never loses a command, including at the worst async alignment where accepts from two legal rises land 4 clocks apart. Below the legal spacing the lockout is best effort, whether a sub contract rise passes or blocks depends on which edge resolves slow, the requirements table states it. At demo board speeds, an MCU toggling GPIO, these numbers are trivially met.
 
 ## Interface requirements
 
@@ -71,7 +71,7 @@ These were driver guidance in v0.2. In v0.3 they are stated requirements with de
 
 | Requirement | Value | Violation behavior | Pinning test |
 |---|---|---|---|
-| Rise to rise spacing | at least 5 clocks between strobe rises | A rise whose accept would land inside the 3 clock lockout after a prior accept is ignored, no command fires from it | test_lockout_boundary_gl |
+| Rise to rise spacing | at least 5 clocks between strobe rises | Best effort below the legal spacing, resolution dependent. A rise whose accept lands inside the 3 clock lockout after a prior accept is ignored. At spacing 4 a slow then fast resolution blocks the second rise and the other combinations pass it. At or above 5 clocks no command is ever lost at any resolution, proven in formal/f_handshake.sv and enumerated by test_latency_grid | test_lockout_boundary_gl, test_latency_grid |
 | Data setup and hold | ui_in and uio[2:0] stable from before the strobe rise, through the whole high time, and for 2 clocks after the fall | Data changed inside that window can be captured or missed, the command latches an undefined value, outside the window it has no effect | test_data_hold_window |
 
 Both pinning tests are pin only and run on the hardened gate level netlist, not just RTL.

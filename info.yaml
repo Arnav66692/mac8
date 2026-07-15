@@ -3,7 +3,7 @@ project:
   title:        "MAC8 serial multiply accumulate"
   author:       "Arnav Singh"
   discord:      ""
-  description:  "Serial int8 multiply accumulate with a 24 bit saturating accumulator and sticky overflow flag"
+  description:  "Serial int8 multiply accumulate, 24 bit saturating accumulator, sticky overflow flag. Hold rst_n low at least 3 clocks, it is synchronized inside"
   language:     "SystemVerilog"
   clock_hz:     50000000
 
