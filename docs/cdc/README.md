@@ -4,6 +4,14 @@ The bench for the synchronizer first flop, ff1. It is the setup for the MTBF
 work. The tau and T0 fit, the resolution plot, and the MTBF paragraph are
 Arnav's, this directory only provides the bench and a sanity run.
 
+Corners and supplies, named. tt is 1.80 V at 25 C, the nominal supply. ss is
+1.60 V at 100 C, the low supply corner, 11 percent below nominal, so board
+droop is inside the characterized point, no extrapolation. The 65 nm
+precedent cited in the sensitivity table is Beer, Ginosar, Priel, Dobkin,
+and Kolodny, The Devolution of Synchronizers, IEEE ASYNC 2010, silicon
+measurements on 65 nm, where measured MTBF missed the prediction by 3.3x.
+That factor is what the bound's sensitivity rows bracket.
+
 ## The cell
 
 ff1 in the hardened netlist maps to sky130_fd_sc_hd__dfxtp_2, item 1 of the

@@ -64,7 +64,44 @@ path delay row. Complete fanout evidence in docs/FANOUT_FF1.md.
 Why ss 100C 1v60 bounds tau. tau grows with lower voltage and higher
 temperature, and the extraction confirms the direction, 42.80 ps at tt
 1.80 V 25 C against 131.49 ps at ss 1.60 V 100 C, so the slowest corner in
-the signoff set is the tau maximum and the bound below prices it.
+the signoff set is the tau maximum and the bound below prices it. The ss
+extraction supply is 1.60 V, the low supply corner, 11 percent below the
+1.80 V nominal, so board droop is already priced, no additional low
+voltage point is needed.
+
+The slack feeding the exponent carries clock uncertainty. t is required
+minus arrival, and required already subtracts the 0.25 ns uncertainty and
+the library setup time, so t is net of both, conservative direction.
+f_data is an input assumption, not a derived value, 10 MHz worst legal,
+one strobe rise per 5 clocks at 50 MHz. The denominator is linear in it,
+halving the rate doubles the MTBF, it must be stated, never reverse
+engineered from the answer.
+
+Scope of this bound. It covers the strobe crossing, ff1 to ff2 in
+mac8_sync. The reset synchronizer, rst_ff1 and rst_ff2 in mac8_rst_sync,
+instances _1636_ and _1635_ in the final netlist, is the same
+sky130_fd_sc_hd__dfxtp_2 cell, so tau and T0 carry over. It is outside
+the f_data rate model above, its event rate is one transition per reset,
+not 10 MHz, so its MTBF sits about seven orders of magnitude beyond the
+strobe bound at the same slack scale. Stated for scope, the headline
+number is the strobe path.
+
+### Threshold delta trace, round two to the final run
+
+Last round the headline read threshold 353.77 ps and margin 2.69x. The
+final package reads 351.04 ps and 2.62x. The 2.73 ps delta decomposes into
+two moves, both traceable.
+
+| Move | Threshold | Traces to |
+|---|---|---|
+| Round two basis, t 17.457877 ns, combined T0 12.42 ps | 353.77 ps | run 29352875225, commit e82437b |
+| Slack moved to 17.544488 ns, same T0 | 355.53 ps, plus 1.76 | run 29401092054, commit 49f5f29, the F3 width fix and the rst_n synchronizer re placed the netlist, launch 0.774971 to 0.735318, data path delay 2.014390 to 1.933987 |
+| T0 promoted to the worst per side 23.34 ps | 351.04 ps, minus 4.49 | the round two conservative headline ruling, ln factor 49.348 to 49.979 |
+
+The refit did not move tau. The sweep CSVs and the fit are unchanged from
+round two, tau reads 131.49 combined and 134.19 worst per side in both.
+The ratio moved 2.69 to 2.62 for the same two reasons plus the tau basis
+promotion, 131.49 to 134.19, in the denominator of the margin.
 
 Free margin, noted, not claimed. The bench measures band exit on the master
 latch node, upstream of the Q pin that STA references. A real failure needs
@@ -183,7 +220,7 @@ Using the ss corner denominator from the report, T0 · f_clk · f_data = 11670 p
 
 tau_threshold = 17.54 ns / ln((4.35e17) · 11670) = 351.0 ps
 
-The extracted ss value is tau 134.2 ps, so the real extracted value is 351.0 / 134.2 = 2.62 times inside the threshold. The design outlives the age of the universe for any tau below 351.0 ps, and the extracted ss value has a factor of 2.62 margin to that limit.
+The extracted ss value is tau 134.2 ps, so the real extracted value is 351.0 / 134.2 = 2.62 times inside the threshold. The bound reads in three tiers. The universe age line holds through any extraction miss up to 2.62x. The one measured precedent, the Beer and Ginosar 65 nm chip, missed its own prediction by 3.3x, which lands past that line at 1.4e13 seconds, about 437 thousand years, the table row. Even a 4x miss leaves about 426 years on a tile whose worst failure is a glitch on a demo board.
 
 The result is also insensitive to T0. T0 sits inside a logarithm, so even a 2x error in it moves the threshold by about 1 percent. The bound does not rest on precise silicon numbers.
 
