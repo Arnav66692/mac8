@@ -69,10 +69,17 @@ async def test_random_protocol_500(dut):
 async def test_ringing_edge_one_mac_pins(dut):
     """A ringing strobe edge fires exactly one MAC, proven through the pins.
 
-    Preload 6 and 7, ring the strobe with cmd held at MAC, high 2, low 2,
-    high 3. Without the lockout two MACs land and acc reads 84. With it,
-    exactly one lands and every readback byte matches acc equal 42. This is
-    the gate level safe version of the white box lockout test in tb/."""
+    Preload 6 and 7, ring the strobe with cmd held at MAC, high 2, low 1,
+    high 3, a bounce with rises 3 clocks apart. Without the lockout two MACs
+    land and acc reads 84. With it, exactly one lands and every readback byte
+    matches acc equal 42. This is the gate level safe version of the white
+    box lockout test in tb/.
+
+    The bounce tightened from low 2 to low 1 in round two. The lockout is 3
+    clocks now, so a bounce with rises 4 clocks apart is no longer blocked.
+    At 50 MHz that is an 80 ns oscillation, not signal integrity ringing, and
+    at the pins it is indistinguishable from two intended strobes. Blocking
+    it is what ate a legal command at the worst async alignment."""
     await start_and_reset(dut)
     golden = Golden()
 
@@ -87,7 +94,7 @@ async def test_ringing_edge_one_mac_pins(dut):
     dut.uio_in.value = STROBE | CMD_MAC
     await ClockCycles(dut.clk, 2)
     dut.uio_in.value = CMD_MAC
-    await ClockCycles(dut.clk, 2)
+    await ClockCycles(dut.clk, 1)
     dut.uio_in.value = STROBE | CMD_MAC
     await ClockCycles(dut.clk, 3)
     dut.uio_in.value = CMD_MAC
@@ -158,11 +165,31 @@ async def test_reset_release_strobe_high_gl(dut):
 
 @cocotb.test()
 async def test_lockout_boundary_gl(dut):
-    """The lockout window boundary, through the pins, off grid. A second rise
-    4 clocks after the first, inside the window, is ignored, one MAC lands. A
-    second rise 5 clocks after, the legal minimum, is accepted, two MACs land.
-    Distinguished by the accumulator, 6 times 7 is 42 for one, 84 for two."""
-    for rise_to_rise, macs in ((4, 1), (5, 2)):
+    """The lockout window after the round two width fix, 3 clocks, through
+    the pins, off grid. Three cases pin the exact window edges. A bounce with
+    rises 3 clocks apart, the ring case, lands its second accept at offset 3,
+    inside the window, one MAC. Rises 4 clocks apart land the second accept at
+    offset 4, outside the window, two MACs, this row kills a mutation that
+    reverts the window to 4 clocks. Rises 5 clocks apart, the legal minimum
+    spacing, two MACs, the spacing case.
+
+    The bug the width fix closes cannot appear in this test. The dropped
+    command needs accepts from two legal rises to land 4 clocks apart, first
+    edge resolving slow at plus 3, second fast at plus 2. Deterministic
+    simulation collapses the 2 to 3 latency range to a point, in phase edges
+    resolve identically and legal accepts land 5 apart. So this test pins the
+    ring case and the spacing case, and the dropped command case is closed by
+    the width proof in mac8_sync.sv, not by simulation. The offset 4 row here
+    uses out of contract spacing as an RTL property probe, driver facing
+    behavior at that spacing is unspecified.
+
+    Distinguished by the accumulator, 6 times 7 is 42 for one MAC, 84 for
+    two."""
+    for high, low_clocks, macs, tag in (
+        (2, 1, 1, "ring, second accept offset 3, blocked"),
+        (3, 1, 2, "window edge, second accept offset 4, passes"),
+        (3, 2, 2, "legal minimum, rise to rise 5"),
+    ):
         await start_and_reset(dut)
         golden = Golden()
         await command(dut, CMD_LDA, data=6)
@@ -170,16 +197,15 @@ async def test_lockout_boundary_gl(dut):
         await command(dut, CMD_LDB, data=7)
         golden = apply_command(golden, CMD_LDB, 7)
 
-        # Two MAC rises spaced rise_to_rise clocks, high 3 then low the rest.
-        low = rise_to_rise - 3
+        # Two MAC rises, high then low then high 3, rise to rise high plus low.
         dut.ui_in.value = 0
         dut.uio_in.value = CMD_MAC
         await ClockCycles(dut.clk, 1)
         await Timer(2.5, "ns")  # off grid, both rises shift off the clock grid
         dut.uio_in.value = STROBE | CMD_MAC
-        await ClockCycles(dut.clk, 3)
+        await ClockCycles(dut.clk, high)
         dut.uio_in.value = CMD_MAC
-        await ClockCycles(dut.clk, low)
+        await ClockCycles(dut.clk, low_clocks)
         dut.uio_in.value = STROBE | CMD_MAC
         await ClockCycles(dut.clk, 3)
         dut.uio_in.value = CMD_MAC
@@ -189,7 +215,7 @@ async def test_lockout_boundary_gl(dut):
             golden = apply_command(golden, CMD_MAC, 0)
         await command(dut, CMD_SEL_LO)
         golden = apply_command(golden, CMD_SEL_LO, 0)
-        await check_pins(dut, golden, f"lockout rise to rise {rise_to_rise}")
+        await check_pins(dut, golden, f"lockout {tag}")
         assert golden.acc == (42 if macs == 1 else 84), "golden self check"
 
 

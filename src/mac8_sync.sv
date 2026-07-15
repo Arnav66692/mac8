@@ -1,5 +1,5 @@
 // mac8_sync.sv
-// Strobe path per docs/SPEC.md, frozen v0.2, with the reset arming fix and
+// Strobe path per docs/SPEC.md, frozen, with the reset arming fix and
 // the edge multiplicity lockout.
 // Two flop synchronizer plus edge detect on the synchronized level.
 // accept is a one clock pulse, exactly once per external rising edge.
@@ -24,13 +24,27 @@
 // two cycles, seen_reset[1], and arming lands one cycle later than the old
 // ff1 version. That later arm is the documented behavior, not a regression.
 //
-// F3 edge multiplicity lockout. A slow or ringing strobe edge can cross the
-// input threshold twice and produce two synchronized rising edges from one
-// intended strobe. MAC is not idempotent, so two accepts is silent
-// corruption. After any accept, further accepts are ignored for 4 clocks.
-// Compliant drivers never notice, the minimum legal rise to rise spacing is
-// 5 clocks. Internal hardening under the frozen contract, same layering as
-// the arm bit.
+// F3 edge multiplicity lockout, width 3, corrected in round two review. A
+// slow or ringing strobe edge can cross the input threshold twice and
+// produce two synchronized rising edges from one intended strobe. MAC is
+// not idempotent, so two accepts is silent corruption. After any accept,
+// further accepts are ignored for 3 clocks. Compliant drivers never notice,
+// the minimum legal rise to rise spacing is 5 clocks. Internal hardening
+// under the frozen contract, same layering as the arm bit.
+//
+// Why 3 and not 4. accept fires 2 to 3 clocks after the external edge, per
+// edge, independently, because ff1 resolution direction at the sampling
+// boundary is random per event. Two legal rises at the 5 clock minimum can
+// land their accepts 4 clocks apart, first resolves slow, second fast. The
+// original 4 clock window blocked offsets 1 through 4 and ate that second
+// legal command at worst alignment. Review only catch. No deterministic
+// simulation can express the latency race, sim collapses the 2 to 3 range
+// to a point and both edges resolve identically, same blind spot class as
+// the F2 metastability rule. The 3 clock window still covers the ring, a
+// second synchronized edge from one physical strobe needs ff2 low for a
+// cycle, so its earliest accept is 2 clocks after the first, inside 3. Any
+// later re crossing violates the high 3 low 2 pulse shape and is a second
+// pulse, out of contract.
 
 module mac8_sync (
     input  logic clk,
@@ -54,7 +68,8 @@ module mac8_sync (
   logic       armed;
 
   // Lockout after an accept. lock_cnt is the 2 bit counter, locked is the
-  // window flag. Together they block accept for 4 clocks.
+  // window flag. Together they block accept for 3 clocks, offsets 1 to 3
+  // after the accept cycle. Width reasoning in the header.
   logic [1:0] lock_cnt;
   logic       locked;
 
@@ -79,14 +94,15 @@ module mac8_sync (
       if (seen_reset[1] && !ff2) begin
         armed <= 1'b1;
       end
-      // Lockout window. An emitted accept starts it, then it holds for 4
+      // Lockout window. An emitted accept starts it, then it holds for 3
       // clocks so a second synchronized edge from the same physical strobe
-      // cannot fire a second accept.
+      // cannot fire a second accept. A legal accept at offset 4 passes,
+      // that is the round two fix.
       if (accept) begin
         lock_cnt <= 2'd0;
         locked   <= 1'b1;
       end else if (locked) begin
-        if (lock_cnt == 2'd3) begin
+        if (lock_cnt == 2'd2) begin
           locked <= 1'b0;
         end else begin
           lock_cnt <= lock_cnt + 2'd1;

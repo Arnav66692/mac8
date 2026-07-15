@@ -19,7 +19,15 @@ Design and verify the int8 MAC block, then pass the P1 gates. Acceptance for the
 
 ## Now
 
-MTBF argument placed and verified, docs/CDC_MTBF.md is complete. Open, the pre submission Nix precheck in freeze week, the waveform walk, the remaining drills, the replication gates, RTL freeze with Dad, and the round two review.
+Round two review landed. F3 lockout width fix is the gate, then rst_n harness question, extraction hardening, package hygiene. Open after that, the pre submission Nix precheck in freeze week, the waveform walk, the remaining drills, the replication gates, RTL freeze with Dad.
+
+## Reasoned event, 2026-07-15, F3 lockout width drops a legal command, review only catch
+
+Round two review found it, and it is the sharpest catch yet. accept fires 2 to 3 clocks after the external edge, per edge, independently, because ff1 resolution direction at the sampling boundary is random per event. Two legal rises at the 5 clock minimum spacing can land their accepts 4 clocks apart, first resolves slow at plus 3, second fast at plus 2. The lockout as built sets locked at the end of the accept cycle and holds it while lock_cnt runs 0 to 3, so accepts at offsets 1 through 4 are blocked. Offset 4 is a legal command. The lockout eats it.
+
+No deterministic simulation can see this. Sim collapses the 2 to 3 latency range to a point, two in phase edges resolve identically, accepts land 5 apart, the window never bites. Same blind spot class as F2 metastability. Caught by review, closed by width proof, not by simulation.
+
+One arithmetic correction against the review text, reported, not silently fixed. The worst legal accept spacing is 4 clocks, not 2. Latency jitter is at most 1 clock, so 5 minus 1 is 4. The fix is identical either way. Terminal 2'd2, a 3 clock window, blocks offsets 1 through 3, passes offset 4. Ring coverage holds, the earliest second synchronized edge from one physical strobe needs ff2 low for a cycle, offset 2, inside 3. Any later re crossing violates the high 3 low 2 pulse shape and is a second pulse, out of contract.
 
 ## MTBF argument placed, 2026-07-14
 
