@@ -31,7 +31,7 @@ they are documentation, not new state.
 | Tests | 9 datapath plus 14 protocol white box RTL, 9 pin only gate level, all green |
 | Formal | the async latency dimension proven unboundedly, yosys smtbmc with z3, induction closed, formal/README.md |
 | Metastability MTBF bound | any tau below 351 ps outlives the universe age, extracted ss tau 134 ps, margin 2.6x, docs/CDC_MTBF.md |
-| Known wart | max slew overage at the ss corners, characterized and waived with 1.56 ns of downstream slack, docs/WAIVERS.md |
+| Known wart | max slew overage at the three ss corners and max tt, one waiver with two classes, characterized and waived with 1.56 ns of downstream slack, docs/WAIVERS.md |
 
 ## Pin map
 

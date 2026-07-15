@@ -183,8 +183,9 @@ Steps.
 | Threshold at the real slew rerun T0, 32.66 ps | 348.71 ps, same story |
 
 Sensitivity against an extraction miss, headline basis, D 11670 per second,
-t 17.544488 ns. The Beer and Ginosar test chip measured 3.3x over its own
-prediction, so the table brackets a miss of that size.
+t 17.544488 ns. The Beer and Ginosar 65 nm test chip, The Devolution of
+Synchronizers, IEEE ASYNC 2010, measured 3.3x over its own prediction, so
+the table brackets a miss of that size.
 
 | tau | MTBF | Read as |
 |---|---|---|
@@ -200,7 +201,7 @@ all, and it is still centuries.
 
 ## MTBF for the strobe synchronizer
 
-This analysis proves the physical metastability margin of the strobe synchronizer. It does not prove the RTL protocol. RTL simulation resolves deterministically and cannot exhibit metastability, so the 22 white-box tests and 9 gate-level tests prove protocol behavior and this analysis proves the physics.
+This analysis proves the physical metastability margin of the strobe synchronizer. It does not prove the RTL protocol. RTL simulation resolves deterministically and cannot exhibit metastability, so the 23 white-box tests and 9 gate-level tests prove protocol behavior and this analysis proves the physics.
 
 The standard estimate is:
 
