@@ -12,19 +12,26 @@ real run.
 
 ## Current state
 
-Hardened and green through review round two. Not yet submitted to the
+Hardened and green through review round three. Not yet submitted to the
 shuttle, submission is a separate decision.
+
+The seal boundary in one sentence. Everything in the table below cites
+one netlist, the final hardened run and its sha256, while the waiver, the
+datasheet, and this README describe that sealed package from outside it,
+they are documentation, not new state.
 
 | Number | Value |
 |---|---|
 | Final hardened run | CI 29401092054, commit 49f5f29 |
+| Netlist sha256, the one hash | 5d41493182cd1ece30f2f4a2bdabdf5433400f7b508858161ea6f72db4f13fb0 |
 | Standard cells | 1188, one tile, 64 percent utilization |
-| Setup, worst corner ss 100C 1v60 | plus 1.556 ns at 50 MHz, TNS 0 |
-| Hold, worst corner ff n40C 1v95 | plus 0.111 ns, TNS 0, all nine corners met |
+| Setup, worst corner max_ss_100C_1v60 | plus 1.556 ns at 50 MHz, TNS 0 |
+| Hold, worst corner min_ff_n40C_1v95 | plus 0.111 ns, TNS 0, all nine corners met |
 | DRC, LVS, antenna | 0, 0, 0 |
-| Tests | 9 datapath plus 13 protocol white box RTL, 9 pin only gate level, all green |
+| Tests | 9 datapath plus 14 protocol white box RTL, 9 pin only gate level, all green |
+| Formal | the async latency dimension proven unboundedly, yosys smtbmc with z3, induction closed, formal/README.md |
 | Metastability MTBF bound | any tau below 351 ps outlives the universe age, extracted ss tau 134 ps, margin 2.6x, docs/CDC_MTBF.md |
-| Known wart | max slew violations at the slow corner, setup and hold still met, docs/HOLD_REPORT.md |
+| Known wart | max slew overage at the ss corners, characterized and waived with 1.56 ns of downstream slack, docs/WAIVERS.md |
 
 ## Pin map
 
