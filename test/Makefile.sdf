@@ -1,0 +1,6 @@
+# One off timing annotated GL attempt, round three item 8. Not CI.
+GATES := yes
+include Makefile
+COMPILE_ARGS := $(filter-out -DFUNCTIONAL,$(COMPILE_ARGS)) -gspecify
+VERILOG_SOURCES += sdf_annotate.v
+SIM_BUILD := sim_build_sdf
