@@ -9,7 +9,7 @@ Design and verify the int8 MAC block, then pass the P1 gates. Acceptance for the
 - [x] Datapath RTL, lint clean, unit tested against a golden model.
 - [x] Synchronizer, command decode, top level, lint clean, protocol tested.
 - [x] Reset arming fix, no phantom command, no replay.
-- [x] Both suites green. 9 datapath, 12 protocol.
+- [x] Both suites green. 9 datapath, 13 protocol, plus 9 pin only gate level.
 - [ ] Waveform walk with Surfer, one full transaction by hand.
 - [ ] Pre submission gate, freeze week. Full local precheck in the Nix shell, tt-support-tools precheck.py with Magic DRC and the pin and boundary suite, pinned PDK. The local KLayout DRC alone does not satisfy the local precheck requirement.
 - [ ] Explain phase with Arnav, every file and number.
@@ -19,7 +19,19 @@ Design and verify the int8 MAC block, then pass the P1 gates. Acceptance for the
 
 ## Now
 
-Round two review landed. F3 lockout width fix is the gate, then rst_n harness question, extraction hardening, package hygiene. Open after that, the pre submission Nix precheck in freeze week, the waveform walk, the remaining drills, the replication gates, RTL freeze with Dad.
+Round two complete. F3 lockout width fixed, rst_n synchronizer in, extraction hardened, package on one netlist hash. Open, the pre submission Nix precheck in freeze week, the waveform walk, the remaining drills, the replication gates, RTL freeze with Dad, the slow corner slew wart for a future round.
+
+## Verified facts, final hardened run, round two, 2026-07-15
+
+- Run 29401092054 at commit 49f5f29, all jobs green, gds, precheck 15 of 15, gl_test 9 of 9, docs. Final netlist sha256 5d41493182cd1ece30f2f4a2bdabdf5433400f7b508858161ea6f72db4f13fb0. One run feeds every package table, CDC_MTBF, HOLD_REPORT, FANOUT_FF1, README.
+- Std cells 1188, utilization 63.95 percent. Setup WNS plus 1.556 ns at max ss, TNS 0 everywhere. Hold WNS plus 0.111 ns at the fast corner, TNS 0, nine corners. Magic DRC 0, LVS 0, antenna 0. Hold buffers 19, up from 12.
+- Slew wart evolved. 254 max slew violations at max ss, worst 1.207 ns against 0.750, and now 33 at max tt, 11 at nom tt, which were zero before round two. Zero fanout violations. Setup and hold met everywhere, still the deferred resizer call.
+- Sync integrity on the final netlist. ff1 _1624_, ff2 _1625_, ff3 _1626_, rst_ff1 _1636_, rst_ff2 _1635_, five distinct dfxtp_2, one driver each. ff1 Q drives exactly the hold buffer, rst_ff1 Q drives exactly its hold buffer, evidence in docs/FANOUT_FF1.md.
+- ff1 to ff2 setup slack 18.679211 ns at nom tt, 17.544488 ns at max ss. Hold 0.740827 and 1.753611. The bound recomputed on the conservative pair with the final t, threshold 351.04 ps, margin 2.62x over the headline tau 134.19 ps.
+
+## Round two closed, deltas against the reviewer text, 2026-07-15
+
+Reported, not silently fixed. The review said accepts can land 2 apart, the correct worst legal spacing is 4, the fix is the same. The review quoted threshold 349.3 ps and margin 2.60x, computed on the pre fix slack 17.458 ns, the final run reads t 17.544 ns, threshold 351.04 ps, margin 2.62x. The review ballparked the sensitivity rows at about 1e25 s at 2x and about 4e10 s at 4x, those verify on the combined pair with the old t, the doc carries the conservative basis with the final t, 2.1e24 s and 1.3e10 s, about 426 years, plus the 3.3x Beer and Ginosar row at about 437 thousand years. README written, it was the Apache license before. Hold report regenerated from the final run, the old one cited 29314372443 while the CDC doc cited 29352875225, the exact two run mismatch the review flagged.
 
 ## Reasoned event, 2026-07-15, F3 lockout width drops a legal command, review only catch
 
