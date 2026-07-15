@@ -18,7 +18,8 @@ All numbers from the final hardened run, CI run 29401092054, commit
 
 **What.** Input pin transition times beyond the 0.75 ns library
 characterization limit on high fanout nets built by the fanout clone pass.
-Two classes.
+This is one waiver, W1, with two classes of the same finding, the same max
+transition mechanism on two net groups. It is not two waivers.
 
 **Class 1, operand and multiplier fanout, the datapath class.**
 
@@ -57,10 +58,19 @@ violations at all nine corners, the waived nets included.
 
 **Risk and sign.** The overage means delay lookup beyond the
 characterized slew axis, an extrapolation. Treat the error as adverse,
-added delay. Bound it by the full slew excess, 0.46 ns at the worst pin.
-That bound is 3.4x inside the 1.56 ns downstream slack, so even the
-pessimistic extreme does not approach a violation. Hold uses the same
-tables and holds 1.75 ns of slack on the sync path at the same corner.
+added delay. Paths compose, so the honest charge is not the worst single
+pin but the sum of the excesses along one path. The worst setup path at
+max_ss_100C_1v60, _1595_ to _1622_, traverses six waived nets in series,
+net51 net50 net22 net21 net20 net14, with slew excesses over the 0.75 ns
+limit of 0.114, 0.001, 0.342, 0.190, 0.452, and 0.002 ns, summing to about
+1.10 ns. Charge every one of those in full as added delay and the path
+still holds plus 0.46 ns, 1.41x inside its 1.5557 ns slack. That full sum
+is an upper bound twice over, the slack already prices the actual slews on
+delay and this charge counts only the extrapolation error, which is a
+fraction of the slew excess, not the whole of it. The worst single pin
+alone is 0.45 ns, 3.4x inside. Either accounting clears. Hold uses the
+same tables and holds 1.75 ns of slack on the sync path at the same
+corner.
 
 **Precheck.** The Tiny Tapeout precheck runs 15 checks, all geometry,
 connectivity, and naming. It does not gate on max transition. Verified on

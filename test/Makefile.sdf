@@ -1,4 +1,6 @@
-# One off timing annotated GL attempt, round three item 8. Not CI.
+# Timing annotated gate level run, round three item 8. Not CI, run by hand.
+# Result recorded in docs/GL_TIMING.md, pass at max_ss_100C_1v60. Needs the
+# corner SDF copied to sdf_max_ss.sdf and the netlist to gate_level_netlist.v.
 GATES := yes
 include Makefile
 COMPILE_ARGS := $(filter-out -DFUNCTIONAL,$(COMPILE_ARGS)) -gspecify
