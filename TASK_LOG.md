@@ -35,6 +35,10 @@ Enumeration, test_latency_grid in tb/test_top.py, latency forced per edge by pha
 
 The class that was verified by reading is now verified by proof and enumeration both.
 
+## Explanation page refreshed through round three, 2026-07-15
+
+The Notion study page now matches the sealed state, verified against the repo at commit 6758caf before writing, every number checked against the report files. New module section 2e for mac8_rst_sync. Lockout section rewritten at width 3 with the worst alignment arithmetic. Incidents 7 and 8 added, the page teaches eight. New top level sections, the formal proof and the waivers, sections renumbered to ten. Metastability concept carries the current bound, the delta trace, and the droop corner. Spec section at v0.4 with the best effort row. Currency callout cites the sealed run and netlist hash. Six new hard FAQ entries, 24 total. Defense drill reconciled, the would not sign answer now signs with the named waiver and the named open, silicon correlation next tile. Stale token sweep clean, no old width, no old threshold, no old margin, no pre rename module name.
+
 ## Round three paperwork, findings first, 2026-07-15
 
 Finding, the synchronized reset tree violates max transition at the ss corners. Item 7 asked to confirm it clean and it is not. net42, one branch of the rst_ff2 fanout, reads 0.899 ns at max_ss_100C_1v60 against the 0.75 limit, 0.860 at nom_ss, 0.811 at min_ss, 11 pins each, and one sink is _1563_/A, the reset AND on the ff1 to ff2 path. Exposure analysis, the net is static in operation and transitions once per reset, the side input slew does not enter the B to X arc delay the MTBF slack uses, and every reset release timing path is met. The rsz-corners branch improves it only to 0.892, same class, no clear. Folded into the waiver as class 2, not stated away. All other corners clean, and the tt corners carry no reset tree violations.
