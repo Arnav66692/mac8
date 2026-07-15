@@ -595,6 +595,98 @@ async def test_in_flight_cancel(dut):
     assert ovf == 0, "ovf set after a clean post reset MAC"
 
 
+# Round three gate backstop. The async latency grid, enumerated. WHITE BOX.
+# Each synchronized edge resolves in 2 or 3 clocks depending on which side
+# of a sampling edge the strobe rise lands. Deterministic sim cannot vary
+# that choice at random, but it can be FORCED per edge by phase placement,
+# a rise 0.1 ns before a posedge samples that edge, latency 2, fast. A rise
+# 0.1 ns after samples the next, latency 3, slow. This test enumerates
+# every latency combination at rise spacings 4, 5, and 6 clocks, at two
+# base alignments, and asserts the accept count in every cell. The same
+# properties are proven unboundedly in formal/f_handshake.sv, this grid is
+# the concrete enumeration of the same dimension.
+#
+# Expected counts. Accept spacing is spacing plus second slip minus first
+# slip. The 3 clock lockout blocks offsets 1 to 3. Legal spacings 5 and 6
+# give offsets 4 to 7, two accepts in every cell, no legal command is ever
+# lost at any latency combination, the F3 property. Spacing 4 is below the
+# contract and is resolution dependent by design, slow then fast gives
+# offset 3, blocked, one accept. The other three combinations give 4 or 5,
+# two accepts. Spec v0.4 states this row as best effort.
+
+
+async def drive_latency_pair(dut, spacing, slip1, slip2, base_shift_ns):
+    """Two strobe rises with forced per edge latency, cmd held at MAC.
+    slip 0 is fast, the rise lands 0.1 ns before its nominal edge. slip 1
+    is slow, 0.1 ns after. Falls sit mid cycle 2.5 clocks after each rise,
+    so every combination samples at least one low between the pulses.
+    Returns the accept count across the whole window."""
+    period = CLK_PERIOD_NS
+    events = []
+    n1 = 4  # first rise nominal edge, clocks after the anchor
+    n2 = n1 + spacing
+    for n, slip in ((n1, slip1), (n2, slip2)):
+        t_rise = n * period + (0.1 if slip else -0.1)
+        events.append((t_rise, STROBE | CMD_MAC))
+        events.append(((n + 2) * period + period / 2, CMD_MAC))
+    events.sort()
+
+    dut.ui_in.value = 0
+    dut.uio_in.value = CMD_MAC
+    await ClockCycles(dut.clk, 2)
+    await RisingEdge(dut.clk)  # the anchor edge
+    if base_shift_ns:
+        # whole cycle shift plus nothing sub cycle, the anchor moves one
+        # clock, proving the grid does not depend on absolute time
+        await ClockCycles(dut.clk, 1)
+
+    count_task = cocotb.start_soon(count_accepts(dut, n2 + 8))
+    now = 0.0
+    for t, val in events:
+        await Timer(round(t - now, 1), "ns")
+        now = t
+        dut.uio_in.value = val
+    accepts = await count_task
+    return accepts
+
+
+@cocotb.test()
+async def test_latency_grid(dut):
+    """Every latency combination at spacings 4, 5, 6, both alignments."""
+    grid = []
+    for spacing in (4, 5, 6):
+        for slip1 in (0, 1):
+            for slip2 in (0, 1):
+                offset = spacing + slip2 - slip1
+                expect = 1 if offset <= 3 else 2
+                for base in (0, 1):
+                    await start_and_reset(dut)
+                    golden = Golden()
+                    await command(dut, CMD_LDA, data=6)
+                    golden = apply_command(golden, CMD_LDA, 6)
+                    await command(dut, CMD_LDB, data=7)
+                    golden = apply_command(golden, CMD_LDB, 7)
+
+                    accepts = await drive_latency_pair(
+                        dut, spacing, slip1, slip2, base)
+                    cell = (f"s{spacing} L1={2+slip1} L2={2+slip2} "
+                            f"base{base}")
+                    assert accepts == expect, (
+                        f"{cell}. accepts {accepts}, want {expect}")
+
+                    # accumulator confirms through the pins, 42 or 84
+                    for _ in range(accepts):
+                        golden = apply_command(golden, CMD_MAC, 0)
+                    await command(dut, CMD_SEL_LO)
+                    golden = apply_command(golden, CMD_SEL_LO, 0)
+                    await check_pins(dut, golden, f"latency grid {cell}")
+                    grid.append((cell, accepts, expect))
+
+    dut._log.info("latency grid, %d cells, all match", len(grid))
+    for cell, got, want in grid:
+        dut._log.info("  %s -> accepts %d, expected %d", cell, got, want)
+
+
 # F3 lockout test, through the pins. WHITE BOX, reads u_sync.accept to count
 # fires, since no clean pin reports a fire. The stimulus is pins only.
 

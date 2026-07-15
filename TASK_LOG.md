@@ -19,7 +19,21 @@ Design and verify the int8 MAC block, then pass the P1 gates. Acceptance for the
 
 ## Now
 
-Round two complete and audited. One decision held for Arnav, adopt the rsz-corners branch or keep the current baseline, evidence below. Open, the pre submission Nix precheck in freeze week, the waveform walk, the remaining drills, the replication gates, RTL freeze with Dad.
+Round three. Close the async latency dimension, formal proof preferred, exhaustive sweep as the concrete backstop, then the review paperwork. Held from round two, the rsz-corners adoption decision. Open after that, the pre submission Nix precheck in freeze week, the waveform walk, the remaining drills, the replication gates, RTL freeze with Dad.
+
+## Reasoned event, 2026-07-15, one unverified dimension, not three bugs
+
+The reviewer named the pattern. F2, the arm bit reading the metastable flop. F3, the lockout width eating a legal command. The reset release, the harness delivering an asynchronous rst_n the spec assumed synchronous. All three were found by reading, none by the bench, and all three live in the same place, the async latency range that deterministic simulation collapses to a point. Each synchronized edge resolves in 2 or 3 clocks, independently, and no test in the suite can make that choice vary. That is one unverified dimension, not three separate bugs. Fixing the third instance does not verify the dimension. This task verifies the dimension, a formal proof over all latency choices if the flow stands up, and an exhaustive enumeration of the latency grid in the testbench either way. After this, the class is closed by proof or by enumeration, not by the absence of the next counterexample.
+
+## Gate result, the async latency dimension is closed, 2026-07-15
+
+Both legs landed. The dimension that produced F2, F3, and the reset release is now verified by unbounded proof and by concrete enumeration.
+
+Formal, Yosys 0.67 with yosys-smtbmc and z3, stood up locally this session. Harness formal/f_handshake.sv, the real mac8_sync and mac8_ctrl under test, unmodified, cmd held at MAC. The driver is constrained to every legal strobe per v0.4 with free timing choices, and the value ff1 samples on any transition cycle is a free variable, the resolution direction, rises and falls both. Four safety properties. Never more than one rise in flight. No accept without a pending rise, no doubles, no phantoms. No rise finds the previous unconsumed, no losses, the lockout never eats a legal command at any latency combination and any legal spacing. Busy never blocks a legal accept. BMC to depth 60 passed. Temporal induction closed at step 13, unbounded. Vacuity checked, asserting no accept ever happens fails as it must, the model produces real handshakes.
+
+Enumeration, test_latency_grid in tb/test_top.py, latency forced per edge by phase placement, 0.1 ns before a sampling edge is fast, 2 clocks, after is slow, 3 clocks. Spacings 4, 5, 6, all four latency combinations, two base alignments, 24 cells, every cell matches prediction. Legal spacings 5 and 6, two accepts in all sixteen cells, no lost command anywhere. Spacing 4, below contract, resolution dependent as designed, slow then fast blocks at offset 3, one accept, the other three combinations pass, two accepts. Suite now 14 protocol tests, all green.
+
+The class that was verified by reading is now verified by proof and enumeration both.
 
 ## Round two follow ups, slew classification, constraint audit, X window, 2026-07-15
 

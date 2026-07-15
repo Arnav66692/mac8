@@ -18,3 +18,4 @@ test/gate_level_netlist.v
 
 # macOS noise in any subdir
 **/.DS_Store
+formal/build/
