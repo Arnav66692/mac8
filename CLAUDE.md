@@ -16,7 +16,7 @@ Int8 serial MAC for Tiny Tapeout. docs/SPEC.md is frozen and it is law, the vers
 
 ## Repo facts
 
-- Layout. src holds four modules, the top is tt_um_arnav_mac8, was mac8_top before F1. tb holds the two white box RTL suites plus golden.py and the dumpers. test holds the Tiny Tapeout pin only suite. docs holds SPEC.md, frozen, version inside the file, SPEC_NOTES.md the feature queue, and info.md the shuttle datasheet source.
+- Layout. src holds five modules, the top is tt_um_arnav_mac8, was mac8_top before F1, plus mac8_rst_sync since round two. tb holds the two white box RTL suites plus golden.py and the dumpers. test holds the Tiny Tapeout pin only suite. docs holds SPEC.md, frozen, version inside the file, SPEC_NOTES.md the feature queue, and info.md the shuttle datasheet source.
 - Run. source ~/.venvs/mac8/bin/activate, then cd tb and make. Single suite, make TB=datapath or make TB=top.
 - Lint. verilator --lint-only -Wall --top-module tt_um_arnav_mac8 src/mac8_*.sv src/tt_um_arnav_mac8.sv, must stay clean. src/config.json is the TT hardening config, not RTL.
 - Tiny Tapeout. Workflows in .github/workflows are verbatim from ttsky-verilog-template at the ttsky26c tag. test/ is the pin only suite, runs at RTL and gate level in CI. tb/ is the white box RTL suite, local only. Do not submit to the shuttle, that is Arnav's decision.
@@ -29,6 +29,7 @@ Int8 serial MAC for Tiny Tapeout. docs/SPEC.md is frozen and it is law, the vers
 - Busy is a register, high the cycle after a MAC accept. Commands during busy are dropped, not deferred.
 - accept is combinational off ff2 and ff3, gated by armed. A registered accept breaks the 2 to 3 clock contract.
 - After reset the first command needs strobe observed low, then a fresh rise.
+- rst_n is asynchronous at the pad, the TT harness treats clk and rst_n like any other input pins. It crosses mac8_rst_sync, two plain flops with keep, before any module sees it. Ruled round two, 2026-07-15. Driver counts, rst_n low at least 3 clocks, strobe low at least 5 clocks after release.
 - CLR wins on overlapped pulses, and the datapath guard $fatals on any overlap.
 - Edge lockout, accepts ignored 3 clocks after any accept, built as a 2 bit counter plus a run flag. Width ruled 3 in round two, 2026-07-15, the 4 clock window ate a legal command at the worst async alignment, accepts from legal rises can land 4 apart. The 2 bit counter clause in the first review was a cost estimate, not a requirement.
 - cmd and ui_in cross clock domains unsynchronized. The spec driver rules make them quasi static at sampling.
