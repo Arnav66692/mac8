@@ -12,8 +12,9 @@ real run.
 
 ## Current state
 
-Hardened and green through review round three. Not yet submitted to the
-shuttle, submission is a separate decision.
+Hardened and green through review round five, 2026-07-16, the formal proof
+mutation gated after two vacuity audits. Not yet submitted to the shuttle,
+submission is a separate decision.
 
 The seal boundary in one sentence. Everything in the table below cites
 one netlist, the final hardened run and its sha256, while the waiver, the
@@ -25,11 +26,12 @@ they are documentation, not new state.
 | Final hardened run | CI 29401092054, commit 49f5f29 |
 | Netlist sha256, the one hash | 5d41493182cd1ece30f2f4a2bdabdf5433400f7b508858161ea6f72db4f13fb0 |
 | Standard cells | 1188, one tile, 64 percent utilization |
+| Die and core area | 17954.7 and 16493.3 um2, the fixed 1x1 tile, sealed run metrics |
 | Setup, worst corner max_ss_100C_1v60 | plus 1.556 ns at 50 MHz, TNS 0 |
-| Hold, worst corner min_ff_n40C_1v95 | plus 0.111 ns, TNS 0, all nine corners met |
+| Hold, worst corner min_ff_n40C_1v95 | plus 0.111 ns, net of 0.25 ns clock uncertainty and 5 percent derate, TNS 0, all nine corners met |
 | DRC, LVS, antenna | 0, 0, 0 |
 | Tests | 9 datapath plus 14 protocol white box RTL, 9 pin only gate level, all green |
-| Formal | handshake properties proven unbounded, yosys smtbmc with z3, BMC 60 and induction, gated on mutation so deleting the arm bit or the lockout fails the proof, formal/README.md |
+| Formal | handshake properties proven unbounded, yosys smtbmc with z3, BMC 60, induction closes at step 30, gated on mutation, delete arm, delete lockout, an arm settle regression, and a live control all caught, plus the 24 cell latency grid in the testbench, formal/README.md |
 | Metastability MTBF bound | any tau below 351 ps outlives the universe age, extracted ss tau 134 ps, margin 2.6x, docs/CDC_MTBF.md |
 | Known wart | max slew overage at the three ss corners and max tt, one waiver with two classes, characterized and waived with 1.56 ns of downstream slack, docs/WAIVERS.md |
 

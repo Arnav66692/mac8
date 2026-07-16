@@ -18,7 +18,7 @@ Positive slack is met. Hold worst slack is the number that matters.
 
 ## The worst number, plainly
 
-Worst hold slack is plus 0.111 ns, at min_ff_n40C_1v95, the fast corner. Hold is tightest at the fast corner because fast silicon shortens data paths toward the capture edge. It is met, with 0.111 ns to spare. Hold TNS is zero at every corner, no path fails.
+Worst hold slack is plus 0.111 ns, at min_ff_n40C_1v95, the fast corner. That number is net of margin, the hold required time already includes the 0.25 ns clock uncertainty and the flow applies a 5 percent timing derate, visible in the corner's min.rpt and sta.log. Hold is tightest at the fast corner because fast silicon shortens data paths toward the capture edge. It is met, with 0.111 ns to spare after those margins. Hold TNS is zero at every corner, no path fails.
 
 Hold is met but the fast corner margin is thin. The flow spent 19 hold buffers in this netlist to get here, up from 12 before the round two RTL changes. This is the number to watch if the design or the floorplan changes.
 

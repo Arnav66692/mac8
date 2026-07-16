@@ -1,6 +1,16 @@
 # Task Log. P1 MAC8
 
-Updated. 2026-07-13, after the operating manual v2 rewrite.
+Updated. 2026-07-16, after the pre review audit fix batch.
+
+## Pre review audit fix batch, 2026-07-16
+
+A read only adversarial audit swept the whole package before the signoff review, every number recomputed from the artifact that owns it, seven blocking findings, twelve cosmetic, and a named accepted open list. This batch is the ruled fix set, docs and email only, no RTL logic, no flow runs, the seal did not move. The src header edits are comment only, zero netlist impact, and the pushes carry skip ci so no workflow triggers.
+
+Blocking, corrected. The email named SymbiYosys, the flow is Yosys 0.67 driving yosys-smtbmc with z3, corrected, and the email also stops claiming working silicon, drops the unverifiable one week from freeze, and states spec v0.4 at the repo link. This log's sealed run slew line said 11 at nom tt, the sealed run's own metrics.json and checks.rpt both read 0, the 11 belonged to the superseded intermediate netlist, corrected in place with the erratum noted. CDC_MTBF's sensitivity prose said six orders of magnitude past a century where its own table says about 437 thousand years, roughly 4.4e3 centuries, three and a half orders, corrected to match the table. The README cover said round three, now round five, mutation gated, dated. The standing Decisions bullet ratifying the 4 clock lockout is marked superseded with a pointer to the F3 correction, the old words kept. The acceptance checklist count corrected to 14 protocol.
+
+Cosmetic, corrected. 348.71 to 348.69 on the real slew threshold row. The rerun table now publishes worst per side T0, 23.34, 32.66, 23.54, re derived fresh from the committed CSVs before publishing, so the 32.66 sensitivity row traces. formal README M1 failure narrated at step 7, measured from the smtbmc output, and the z3 version pinned at 4.16.0. Both RTL headers drop frozen v0.1, the version lives inside the spec. This log's header date corrected. The spec approval recap gains the v0.3 freeze date. The README formal row names all four mutations and the 24 cell grid. WAIVERS quotes 0.457 so 3.40x recomputes from the page, and the branch worst pin sentence reads 1.214 against the 1.2073 baseline, within 7 ps. PROVENANCE gains the render GDS sha256, verified bit identical to the artifact today. One erratum stays where it is by the log discipline, the dated round two entry labels T0 23.34 as doubling of 12.42, it is the worst per side value, not a doubling, the arithmetic beside it is correct for T0 23.34, noted here, not edited there.
+
+Closures. The README hold row and HOLD_REPORT now state the margin policy, plus 0.111 ns at min_ff net of the 0.25 ns clock uncertainty and the 5 percent derate, read from the corner's own min.rpt and sta.log. Die and core area on the README, 17954.7 and 16493.3 um2 from the sealed metrics. The async input inventory is written in the CDC doc, strobe, rst_n, quasi static data by contract, complete at the level this design warrants. Ruled to stay open, no fmax rating, no power number, no LEC, no silicon measurement plan.
 
 ## Goal
 
@@ -9,7 +19,7 @@ Design and verify the int8 MAC block, then pass the P1 gates. Acceptance for the
 - [x] Datapath RTL, lint clean, unit tested against a golden model.
 - [x] Synchronizer, command decode, top level, lint clean, protocol tested.
 - [x] Reset arming fix, no phantom command, no replay.
-- [x] Both suites green. 9 datapath, 13 protocol, plus 9 pin only gate level.
+- [x] Both suites green. 9 datapath, 14 protocol, plus 9 pin only gate level.
 - [ ] Waveform walk with Surfer, one full transaction by hand.
 - [ ] Pre submission gate, freeze week. Full local precheck in the Nix shell, tt-support-tools precheck.py with Magic DRC and the pin and boundary suite, pinned PDK. The local KLayout DRC alone does not satisfy the local precheck requirement.
 - [ ] Explain phase with Arnav, every file and number.
@@ -93,7 +103,7 @@ Slew violations classified, final run 29401092054. The 33 at max tt are three da
 
 Precheck does not gate on max transition. The final run precheck report lists 15 checks, Magic DRC, six KLayout decks, pin, boundary, power pin, layer, cell name, urpm nwell, analog pin, Verilog syntax. All geometry, connectivity, and naming. All 15 green. No timing check exists in the precheck.
 
-Resizer experiment, branch rsz-corners, commit 3cbf169, run 29404662777, all jobs green including precheck. RSZ_CORNERS set to nom tt, max tt, max ss, min ff. Result, partial reduction, not a clear. Slew 254 to 214 at max ss, 33 to 22 at max tt, nom tt cleared to 0. Setup improved at every corner, max ss 1.556 to 1.934 ns. Hold unchanged, worst 0.1108 vs 0.1106. Cells 1191 vs 1188, utilization 64.07 vs 63.95. The remaining 214 are the same operand fanout class, worst pin 1.214 ns, unchanged. Mechanism, repair runs at placement and global route, RUN_POST_GRT_RESIZER_TIMING is False, no post route repair pass exists, and detailed route parasitics at ss exceed the limit again. Clearing fully needs post route repair or a stronger operand fanout strategy, a bigger PPA move. Adoption held for Arnav, it would also re baseline the one hash package for a partial improvement.
+Resizer experiment, branch rsz-corners, commit 3cbf169, run 29404662777, all jobs green including precheck. RSZ_CORNERS set to nom tt, max tt, max ss, min ff. Result, partial reduction, not a clear. Slew 254 to 214 at max ss, 33 to 22 at max tt, nom tt cleared to 0. Setup improved at every corner, max ss 1.556 to 1.934 ns. Hold unchanged, worst 0.1108 vs 0.1106. Cells 1191 vs 1188, utilization 64.07 vs 63.95. The remaining 214 are the same operand fanout class, worst pin 1.214 ns against the 1.2073 baseline, within 7 ps. Mechanism, repair runs at placement and global route, RUN_POST_GRT_RESIZER_TIMING is False, no post route repair pass exists, and detailed route parasitics at ss exceed the limit again. Clearing fully needs post route repair or a stronger operand fanout strategy, a bigger PPA move. Adoption held for Arnav, it would also re baseline the one hash package for a partial improvement.
 
 Setup jump signed. The old run 29314372443 and the final run have byte identical signoff SDC, and across the entire resolved flow config exactly one key differs, VERILOG_FILES, the added mac8_rst_sync.sv. Clock period 20 ns, uncertainty 0.25, clock transition 0.15, IO delay 20 percent, derate 5 percent, max transition 0.75, all identical. Both worst setup paths are the same reg to reg class, operand register through the multiplier into the accumulator, a_q[7] to acc_q[8] at plus 0.695 in the old run, b_q[3] to acc_q[22] at plus 1.556 in the final. The improvement is re synthesis and re placement of the same path class, seeded by the F3 logic change and the added module. No constraint moved. Signed.
 
@@ -103,7 +113,7 @@ rst_n synchronizer survival confirmed. rst_ff1 is _1636_, rst_ff2 is _1635_ in t
 
 - Run 29401092054 at commit 49f5f29, all jobs green, gds, precheck 15 of 15, gl_test 9 of 9, docs. Final netlist sha256 5d41493182cd1ece30f2f4a2bdabdf5433400f7b508858161ea6f72db4f13fb0. One run feeds every package table, CDC_MTBF, HOLD_REPORT, FANOUT_FF1, README.
 - Std cells 1188, utilization 63.95 percent. Setup WNS plus 1.556 ns at max ss, TNS 0 everywhere. Hold WNS plus 0.111 ns at the fast corner, TNS 0, nine corners. Magic DRC 0, LVS 0, antenna 0. Hold buffers 19, up from 12.
-- Slew wart evolved. 254 max slew violations at max ss, worst 1.207 ns against 0.750, and now 33 at max tt, 11 at nom tt, which were zero before round two. Zero fanout violations. Setup and hold met everywhere, still the deferred resizer call.
+- Slew wart evolved. 254 max slew violations at max ss, worst 1.207 ns against 0.750, and now 33 at max tt, which was zero before round two. nom tt reads 0 in this run, confirmed in both the run's metrics.json and its stapostpnr checks.rpt. An earlier version of this line said 11 at nom tt, that count belonged to the superseded intermediate netlist, corrected 2026-07-16. Zero fanout violations. Setup and hold met everywhere, still the deferred resizer call.
 - Sync integrity on the final netlist. ff1 _1624_, ff2 _1625_, ff3 _1626_, rst_ff1 _1636_, rst_ff2 _1635_, five distinct dfxtp_2, one driver each. ff1 Q drives exactly the hold buffer, rst_ff1 Q drives exactly its hold buffer, evidence in docs/FANOUT_FF1.md.
 - ff1 to ff2 setup slack 18.679211 ns at nom tt, 17.544488 ns at max ss. Hold 0.740827 and 1.753611. The bound recomputed on the conservative pair with the final t, threshold 351.04 ps, margin 2.62x over the headline tau 134.19 ps.
 
@@ -258,7 +268,7 @@ At F8 the vault OPERATING_MANUAL.md, the v2, was gone. Only OPERATING_MANUAL_v1.
 
 - Reset arming by arm bit, ruling from Arnav. All flops still clear on reset.
 - Guard uses $fatal not $error, so an overlap actually fails a run.
-- Lockout stays as built, 4 clocks via a 2 bit counter plus a run flag. Ratified, the 2 bit counter clause was a cost estimate, not a requirement.
+- Lockout stays as built, 4 clocks via a 2 bit counter plus a run flag. Ratified, the 2 bit counter clause was a cost estimate, not a requirement. Superseded 2026-07-15. The width is 3 clocks, ruled in round two, the 4 clock window ate a legal command at the worst async alignment. See the reasoned event, F3 lockout width drops a legal command, and spec v0.4.
 - Vault spec copy renamed to MAC8 Spec.md, version neutral, the version lives inside the file. Zero hand maintained references needed fixing, verified by sweep.
 - Notion Explanation page refreshed to the current repo, 2026-07-13. It now carries the ff2 arm with the two cycle skip, the F3 lockout section, the spec v0.2 rules, incidents five and six, and four new hard FAQ. Marked current as of ba49d54. Verified by refetch, 28 checks, 63 toggles, no stale strings outside the one labeled historical quote.
 
