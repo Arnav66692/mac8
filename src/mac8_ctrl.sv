@@ -1,5 +1,5 @@
 // mac8_ctrl.sv
-// Command decode per docs/SPEC.md, frozen v0.1.
+// Command decode per docs/SPEC.md, frozen, the version lives inside the file.
 // On accept, exactly one one clock pulse per the command table.
 // sel encoding to the datapath is ratified. 00 low, 01 mid, 10 high.
 // busy covers the MAC execute cycle, one cycle in v0.1.

@@ -1,5 +1,6 @@
 // mac8_datapath.sv
-// Datapath for the MAC8 unit. Arithmetic per docs/SPEC.md, frozen v0.1.
+// Datapath for the MAC8 unit. Arithmetic per docs/SPEC.md, frozen, the
+// version lives inside the file.
 // Holds all data state. Control inputs are one clock pulses from the FSM.
 // Reset is synchronous, active low. All state clears to 0.
 // out_sel encoding. 00 low byte, 01 mid byte, 10 high byte.
