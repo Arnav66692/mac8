@@ -105,6 +105,6 @@ CLR once. Per element, LDA x_i, then LDB w_i, then MAC. After the last element, 
 
 ## Approval
 
-Approved and frozen at v0.1 on 2026-07-13. v0.2 clarifications frozen 2026-07-13, no feature changes, wording only. v0.4 corrections frozen 2026-07-15 on the round two ruling. Changes from here are a version bump.
+Approved and frozen at v0.1 on 2026-07-13. v0.2 clarifications frozen 2026-07-13, no feature changes, wording only. v0.3 interface requirements frozen 2026-07-14. v0.4 corrections frozen 2026-07-15 on the round two ruling. Changes from here are a version bump.
 
 Links. [[P1 MAC RTL Block]], [[00 Chip Track Home]]

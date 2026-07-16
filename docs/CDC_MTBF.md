@@ -77,6 +77,13 @@ one strobe rise per 5 clocks at 50 MHz. The denominator is linear in it,
 halving the rate doubles the MTBF, it must be stated, never reverse
 engineered from the answer.
 
+Async input inventory, complete. Three inputs cross into the clock domain.
+The strobe, through two flops with edge detect, the arm bit, and the
+lockout, the crossing this bound prices. rst_n, through the two flop reset
+synchronizer in mac8_rst_sync. ui_in and the command bits, quasi static by
+the spec driver contract, pinned by test_data_hold_window and the spacing
+tests. Every other pin is an output or ignored ena.
+
 Scope of this bound. It covers the strobe crossing, ff1 to ff2 in
 mac8_sync. The reset synchronizer, rst_ff1 and rst_ff2 in mac8_rst_sync,
 instances _1636_ and _1635_ in the final netlist, is the same
@@ -136,11 +143,11 @@ is the headline, tau 134.19 ps and T0 23.34 ps.
 
 Round two robustness reruns at ss, both committed with deck hashes.
 
-| Run | tau ps combined | T0 ps combined | worst per side tau ps | Verdict |
-|---|---|---|---|---|
-| Baseline, 20 ps edges, gear, reltol 1e-6 | 131.49 | 12.42 | 134.19 | reference |
-| Real STA slews, CLK 75.9 ps, D 69.3 ps | 131.02 | 16.25 | 131.83 | tau moved 0.4 percent, stimulus attack removed |
-| Solver check, reltol 1e-7, max step halved, trap | 131.42 | 12.46 | 134.00 | tau moved under 0.1 percent, physics not integrator |
+| Run | tau ps combined | T0 ps combined | worst per side tau ps | worst per side T0 ps | Verdict |
+|---|---|---|---|---|---|
+| Baseline, 20 ps edges, gear, reltol 1e-6 | 131.49 | 12.42 | 134.19 | 23.34 | reference |
+| Real STA slews, CLK 75.9 ps, D 69.3 ps | 131.02 | 16.25 | 131.83 | 32.66 | tau moved 0.4 percent, stimulus attack removed |
+| Solver check, reltol 1e-7, max step halved, trap | 131.42 | 12.46 | 134.00 | 23.54 | tau moved under 0.1 percent, physics not integrator |
 
 The worst per side tau across all three runs is the baseline 134.19 ps, so
 the headline pair survives its own robustness checks. The real slew values
@@ -180,7 +187,7 @@ Steps.
 | Margin against the combined ss tau, 131.49 ps | 2.67x |
 | Threshold on the combined pair, T0 12.42 ps | 355.53 ps, margin 2.70x, reference |
 | Threshold if T0 doubles to 46.68 ps | 346.24 ps, the exponent dominates |
-| Threshold at the real slew rerun T0, 32.66 ps | 348.71 ps, same story |
+| Threshold at the real slew rerun worst per side T0, 32.66 ps | 348.69 ps, same story |
 
 Sensitivity against an extraction miss, headline basis, D 11670 per second,
 t 17.544488 ns. The Beer and Ginosar 65 nm test chip, The Devolution of
@@ -195,7 +202,8 @@ the table brackets a miss of that size.
 | 536.8 ps, 4x miss | 1.3e10 s | about 426 years, still past any part lifetime |
 
 The bound survives a 65 nm sized extraction miss. The measured 3.3x factor
-from the Beer and Ginosar chip leaves six orders of magnitude past a
+from the Beer and Ginosar chip leaves about 437 thousand years, roughly
+4.4e3 centuries, about three and a half orders of magnitude past a
 century. Only a miss beyond 4x brings the number into engineering range at
 all, and it is still centuries.
 

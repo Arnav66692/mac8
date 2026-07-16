@@ -68,7 +68,7 @@ still holds plus 0.46 ns, 1.41x inside its 1.5557 ns slack. That full sum
 is an upper bound twice over, the slack already prices the actual slews on
 delay and this charge counts only the extrapolation error, which is a
 fraction of the slew excess, not the whole of it. The worst single pin
-alone is 0.45 ns, 3.4x inside. Either accounting clears. Hold uses the
+alone is 0.457 ns, 3.40x inside. Either accounting clears. Hold uses the
 same tables and holds 1.75 ns of slack on the sync path at the same
 corner.
 

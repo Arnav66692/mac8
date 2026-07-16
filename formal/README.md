@@ -102,15 +102,15 @@ bash formal/mutation_test.sh 60                       # the gate
 
 ## Result, 2026-07-16
 
-Yosys 0.67, yosys-smtbmc, z3. Base, BMC to depth 60 PASSED, temporal
+Yosys 0.67, yosys-smtbmc, z3 4.16.0. Base, BMC to depth 60 PASSED, temporal
 induction closed at step 30, the proof is unbounded. Vacuity checked, an
 added assert that no accept ever happens fails in BMC as it must, so the
 model produces real handshakes.
 
 The mutation gate held. base PASS, M1 delete armed FAIL, M2 delete lockout
 FAIL, M3 arm regression FAIL, control FAIL. Each mutation fails for its own
-mechanism, verified by trace. M1 fails on P2 at boot 6, a phantom accept
-from a strobe held high across reset. M2 fails on P2 at step 14, a double
+mechanism, verified by trace. M1 fails on P2 at step 7, a phantom accept
+from a strobe held high across reset, measured from the smtbmc output. M2 fails on P2 at step 14, a double
 accept from a ring. M3 fails on P3 and the bounded response at step 13, a
 lost first command. This is the difference between a proof that passes and
 a proof that proves something. The first two rounds passed and proved
