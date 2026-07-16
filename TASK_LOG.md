@@ -27,6 +27,28 @@ The round three formal proof passed, and it had a hole. The assertions were gate
 
 The fix is three changes to the harness, none to the DUT. The assertion window now opens at rst_n deassert, so every live cycle including the arm transient is watched. The obligation counter saturates instead of wrapping, and three sticky flags latch any phantom, double, or busy block forever, so no later arithmetic can hide a violation and induction cannot start from a laundered state. cmd is now free, so P4 holds for every command, not only MAC. Reran, BMC to depth 60 passed, temporal induction closed at step 23, unbounded, deeper than the prior 13 because the sticky state is larger, and the vacuity probe still fails as it must. A forced phantom accept injected at boot 7, inside the old blind window, is now caught at boot 7 by the phantom assertion, where before the window opened seven cycles too late. The dimension is closed and now the proof actually watches the release edge.
 
+## Reasoned event, 2026-07-15, the proof was vacuous on the mechanisms it claimed
+
+An adversarial audit of the verification itself, four lenses, found the round three and four proof vacuous on F2 and F3. I reproduced it by mutation. Delete the armed gate, accept_raw equals ff2 and not ff3, the proof passes. Delete the lockout, accept equals accept_raw, the proof passes. Delete the edge detect, the proof fails, so the harness was live but blind. The cause, the driver held the strobe low across the whole reset release window, so the arm bit settled before any edge arrived and could never be exercised, and the metastability model produced only one synchronized edge per rise, so the lockout could never see a ring. The window was watched and never stimulated. This is the third layer of the same async release blind spot, F2 was the bug, round four opened the window, and this is the stimulus that finally drives it.
+
+The gate for the fix is mutation, not a green pass. Acceptance is that delete-armed, delete-lockout, and an arm-settle regression all fail against the fixed harness while the edge-detect control still fails and base passes. A passing proof over a stimulus that never reaches the failing case proves nothing, which is exactly what this was.
+
+## Gate result, the proof is non-vacuous, 2026-07-16
+
+Held. The mutation table, reproducible with formal/mutation_test.sh.
+
+| Case | Mutation | Result | Caught by |
+|---|---|---|---|
+| base | none | PASS | BMC depth 60, temporal induction closed at step 30, unbounded |
+| M1 | delete the armed gate | FAIL | P2, a phantom accept at boot 6 from a strobe held high across reset, f_rhl 16 |
+| M2 | delete the lockout | FAIL | P2, a double accept at step 14 from a ring, one physical strobe crossing twice |
+| M3 | arm settle regressed 4 clocks | FAIL | P3 and the bounded response, a lost first command at step 13 |
+| control | delete the edge detect | FAIL | P2, still live |
+
+Each mutation fails for its own mechanism, confirmed by the counterexample trace, not by an accident. The vacuity probe, assert no accept ever, fails in BMC as it must, so the model produces real handshakes.
+
+Three stimulus changes made it non-vacuous. The strobe can be held high across reset release, force_high, so the arm bit meets the edge it swallows. A command pulse can ring, a clean deterministic dip inside its high pulse, so the lockout meets the double edge it suppresses. The first legal command lands at the internal 3 clock hard floor, so an arm settle regression drops it. Obligations are counted from command rises, classified by spacing, a rise closer than 5 clocks is a ring not a command. Rings are clean, the metastable latency freedom stays on command edges only, so the round three latency dimension is retained. The harness rst_n is the reset the core sees after mac8_rst_sync, stated, the module only delays release by two clean clocks. One overclaim corrected everywhere, the round three and four claim that the proof closed the F2 and F3 class was false until this table held.
+
 ## Round four small findings and wording, 2026-07-15
 
 P4, item 5. Freed cmd rather than argue subsumption. cmd is now an anyseq input, so busy never blocks a legal accept for every command, not only MAC. The proof passed with cmd free, which is the stronger claim, MAC is only the worst case for busy occupancy anyway.

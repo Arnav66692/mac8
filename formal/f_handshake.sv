@@ -1,42 +1,36 @@
 // f_handshake.sv
-// Formal harness for the strobe handshake, round three gate, round four fix.
+// Formal harness for the strobe handshake, round five, stimulus redesign.
 //
-// The verified dimension. Each synchronized strobe edge resolves in 2 or 3
-// clocks, independently per edge, because ff1 sampling an edge near the
-// clock boundary is a free outcome. Deterministic simulation collapses that
-// range to a point. F2, F3, and the reset release all lived there. This
-// harness makes the choice free at every strobe transition, rises and
-// falls, and proves the handshake over all traces.
+// The history. Round three proved the handshake over free metastable latency.
+// Round four opened the assertion window at reset release. An adversarial
+// audit of the proof itself then found it VACUOUS on the two mechanisms it
+// named. Deleting the arm bit or the lockout both passed, because the driver
+// held the strobe low across reset release so the arm bit never saw an edge,
+// and modeled one synchronized edge per rise so the lockout never saw a ring.
+// Watched, never stimulated. This harness stimulates them. The gate is
+// mutation, formal/mutation_test.sh, base passes and every mutation is caught.
 //
-// Round four coverage fix. Three changes closed a hole the first proof left.
-// One, the assertions now open the moment rst_n deasserts, not at a fixed
-// boot cycle, so the reset release window and the arm transient right after
-// it, the exact place F2 lived, are observed from the first live cycle. Two,
-// the obligation counter saturates instead of wrapping, so a phantom accept
-// leaves a permanent trace that no later legal rise can launder to zero.
-// Three, three sticky flags latch a violation forever, so induction cannot
-// certify a property it never watched. cmd is now free, so P4 holds for
-// every command, not only MAC.
+// Stimulus. The strobe can be held high across reset release, the case the
+// arm bit swallows, exercised by force_high. A command pulse can ring, one
+// physical strobe dips low for a cycle inside its high pulse, a second
+// threshold crossing, so the synchronizer sees two edges from one command,
+// the case the lockout suppresses. The first legal command lands at the
+// internal 3 clock hard floor, so an arm settle regression drops it. The
+// harness rst_n is the reset the core sees after mac8_rst_sync, that module
+// only delays release by two clean clocks, so gating the first rise at the
+// internal 3 clock floor covers the release window without instantiating it.
 //
-// Model. A constrained driver produces the legal strobe per spec v0.4,
-// high at least 3 clocks, low at least 2, first rise at least 5 clocks
-// after reset release. When the driver may act, whether it acts is a free
-// choice, so all legal spacings are covered. The value ff1 samples on a
-// transition cycle is a free choice, f_meta, the metastable resolution
-// direction. On stable cycles the sample is the driver level. The real
-// mac8_sync and mac8_ctrl RTL sit under test, unmodified.
+// Two edge kinds. A command rise is a real intended strobe, it carries free
+// metastable latency, ff2 sees it 2 or 3 clocks later, the round three
+// dimension. A ring is noise, a clean deterministic dip inside a high pulse,
+// it is not a new command. Obligations are counted from command rises only,
+// classified by spacing, a rise closer than the legal 5 clocks is a ring.
 //
-// Properties, safety form, no liveness needed.
-// P1 pending never exceeds 1, a rise is consumed before the next arrives.
-// P2 no accept without a pending rise, so no rise ever yields two accepts
-//    and no accept appears from nowhere.
-// P3 a new rise never finds the previous one unconsumed, so no rise is
-//    ever lost, the lockout never eats a legal command at any latency
-//    combination and any legal spacing.
-// P4 busy never blocks a legal accept, fire equals accept on legal traces.
-// The strengthening invariant, pending implies since_rise at most three, is
-// a bounded response property. A lost command holds pending at 1 while
-// since_rise climbs, so it trips at since_rise 4 with no next rise required.
+// Properties. P1 pending never exceeds 1. P2 no accept without a pending
+// command, kills doubles and phantoms. P3 no command rise while one is
+// unconsumed, kills losses. P4 busy never blocks a legal accept. Sticky flags
+// latch any violation forever. Bounded response, pending implies since_rise
+// at most 3, trips a lost command 3 clocks after the rise with no next rise.
 
 `default_nettype none
 
@@ -44,37 +38,54 @@ module f_handshake (
     input wire clk
 );
 
-  // Free variables.
-  (* anyseq *) wire       f_rise;   // driver rises now, if eligible
-  (* anyseq *) wire       f_fall;   // driver falls now, if eligible
-  (* anyseq *) wire       f_meta;   // resolution direction on a transition cycle
-  (* anyseq *) wire [2:0] f_cmd;    // free command, P4 must hold for all
+  (* anyseq   *) wire       f_rise;
+  (* anyseq   *) wire       f_fall;
+  (* anyseq   *) wire       f_meta;   // metastable resolution on a command edge
+  (* anyseq   *) wire       f_ring;   // this command pulse rings
+  (* anyconst *) wire [4:0] f_rhl;    // cycles the strobe is held high from power up
+  (* anyseq   *) wire [2:0] f_cmd;    // free command, P4 holds for all
 
-  // Reset preamble. rst_n low for 4 clocks, then high forever.
+  // Internal reset, low 4 clocks then high forever.
   reg [4:0] boot = 5'd0;
   always @(posedge clk) if (!boot[4]) boot <= boot + 5'd1;
   wire rst_n = (boot >= 5'd4);
 
-  // Driver, legal per spec v0.4. Counters saturate.
-  reg       drv_q;      // driver strobe level this cycle
-  reg       drv_q1;     // previous cycle level, for the transition window
-  reg [3:0] hi_cnt;
-  reg [3:0] lo_cnt;
+  reg [4:0] age = 5'd0;
+  always @(posedge clk) if (age != 5'h1F) age <= age + 5'd1;
+  wire force_high = (age < f_rhl);
+
+  // Driver state.
+  reg  drv_q, drv_q1;
+  reg [3:0] hi_cnt, lo_cnt;
+  reg       started;      // first arm floor reached, legal operation
+  reg       ring_mode;    // the current command pulse rings
+  reg       ringed;       // ring already spent this pulse
+  reg       ring_redip;   // just dipped, re-rise now
+  reg       seen_rise;    // a command rise has happened
+  reg [3:0] gap;          // clocks since the last physical rise, saturating
   initial begin
-    drv_q  = 1'b0;
-    drv_q1 = 1'b0;
-    hi_cnt = 4'd0;
-    lo_cnt = 4'd0;
+    drv_q=1'b0; drv_q1=1'b0; hi_cnt=4'd0; lo_cnt=4'd0; started=1'b0;
+    ring_mode=1'b0; ringed=1'b0; ring_redip=1'b0; seen_rise=1'b0; gap=4'hF;
   end
 
-  // Eligibility. Low at least 2 before a rise, high at least 3 before a
-  // fall. The post reset strobe low hold, 5 clocks after release, is
-  // boot >= 9. A compliant driver waits that long, so rises start there,
-  // while the assertions below already watch from boot 4.
-  wire may_rise = rst_n && !drv_q && (lo_cnt >= 4'd2) && (boot >= 5'd9);
+  wire base_low = rst_n && !drv_q && !force_high;
+  // First command waits low 3 and the internal 3 clock floor, later ones low 2.
+  wire may_rise = base_low && (started ? (lo_cnt >= 4'd2)
+                                       : (lo_cnt >= 4'd3 && boot >= 5'd7));
   wire may_fall = rst_n && drv_q && (hi_cnt >= 4'd3);
 
-  wire drv_d = drv_q ? !(may_fall && f_fall) : (may_rise && f_rise);
+  // Ring dip, at the second high cycle of a ringing pulse, once per pulse.
+  wire do_ring = started && ring_mode && drv_q && (hi_cnt == 4'd2) && !ringed;
+
+  wire drv_d = force_high ? 1'b1
+             : ring_redip ? 1'b1                     // re-rise after the dip
+             : do_ring    ? 1'b0                      // the ring dip
+             : drv_q      ? !(may_fall && f_fall)
+             :               (may_rise && f_rise);
+
+  // A physical rise, and a command rise, a physical rise spaced legally.
+  wire phys_rise = drv_d && !drv_q && rst_n && !force_high;
+  wire cmd_rise  = phys_rise && (!seen_rise || gap >= 4'd4);
 
   always @(posedge clk) begin
     drv_q1 <= drv_q;
@@ -86,11 +97,23 @@ module f_handshake (
       lo_cnt <= !drv_q ? (lo_cnt == 4'hF ? 4'hF : lo_cnt + 4'd1) : 4'd1;
       hi_cnt <= 4'd0;
     end
+    if (base_low && (lo_cnt >= 4'd3) && (boot >= 5'd7)) started <= 1'b1;
+    ring_redip <= do_ring;
+    // Decide ring mode for a new command pulse, spend it on a dip.
+    if (cmd_rise) begin ring_mode <= f_ring; ringed <= 1'b0; end
+    else if (do_ring) ringed <= 1'b1;
+    // Physical rise bookkeeping for spacing.
+    if (phys_rise) begin seen_rise <= 1'b1; gap <= 4'd0; end
+    else if (gap != 4'hF) gap <= gap + 4'd1;
   end
 
-  // The metastable sample. On a transition cycle the sampled value is
-  // free. On a stable cycle it is the driver level. This is what ff1 sees.
-  wire sampled = (drv_q == drv_q1) ? drv_q : (f_meta ? drv_q : drv_q1);
+  // What ff1 samples. A ringing pulse is clean except the dip, so the double
+  // edge is deterministic and the lockout suppression is exact. A command
+  // pulse carries free metastable latency on its edge.
+  wire meta_sample = (drv_q == drv_q1) ? drv_q : (f_meta ? drv_q : drv_q1);
+  wire sampled     = do_ring   ? 1'b0
+                   : ring_mode ? drv_q
+                   :             meta_sample;
 
   // Device under test, the real RTL.
   wire accept;
@@ -99,60 +122,28 @@ module f_handshake (
   wire busy;
 
   mac8_sync u_sync (
-      .clk          (clk),
-      .rst_n        (rst_n),
-      .strobe_async (sampled),
-      .accept       (accept)
-  );
+      .clk (clk), .rst_n (rst_n), .strobe_async (sampled), .accept (accept));
 
   mac8_ctrl u_ctrl (
-      .clk    (clk),
-      .rst_n  (rst_n),
-      .accept (accept),
-      .cmd    (f_cmd),          // free, MAC is only the worst case for busy
-      .ld_a   (ld_a),
-      .ld_b   (ld_b),
-      .do_mac (do_mac),
-      .do_clr (do_clr),
-      .ld_sel (ld_sel),
-      .sel_in (sel_in),
-      .busy   (busy)
-  );
+      .clk (clk), .rst_n (rst_n), .accept (accept), .cmd (f_cmd),
+      .ld_a (ld_a), .ld_b (ld_b), .do_mac (do_mac), .do_clr (do_clr),
+      .ld_sel (ld_sel), .sel_in (sel_in), .busy (busy));
 
-  // Rise event, in the driver's frame.
-  wire rise_ev = drv_d && !drv_q;
-
-  // Obligation model, entirely in the harness, never in the DUT. pending
-  // counts rises still waiting for their accept. It SATURATES, it never
-  // wraps, so no later arithmetic can launder a violation into a legal
-  // value. Three sticky flags latch the instant a property is first
-  // violated and never clear, so a violation in any cycle, including the
-  // reset release window, is a permanent trace the induction must confront.
+  // Obligation model, harness only, saturating, sticky. A command rise opens
+  // an obligation, an accept discharges it. Rings and the reset high artifact
+  // are not command rises, so an accept from either has no obligation and
+  // trips the phantom flag.
   reg [1:0] pending;
-  reg       err_phantom;   // an accept with no obligation outstanding
-  reg       err_double;    // a rise while an obligation is still outstanding
-  reg       err_busy;      // an accept coincident with busy
-
-  initial begin
-    pending     = 2'd0;
-    err_phantom = 1'b0;
-    err_double  = 1'b0;
-    err_busy    = 1'b0;
-  end
-
+  reg       err_phantom, err_double, err_busy;
+  initial begin pending=2'd0; err_phantom=1'b0; err_double=1'b0; err_busy=1'b0; end
   always @(posedge clk) begin
     if (!rst_n) begin
-      pending     <= 2'd0;
-      err_phantom <= 1'b0;
-      err_double  <= 1'b0;
-      err_busy    <= 1'b0;
+      pending<=2'd0; err_phantom<=1'b0; err_double<=1'b0; err_busy<=1'b0;
     end else begin
-      // Sticky violation detectors. Once set, never cleared.
-      if (accept && busy)               err_busy    <= 1'b1;
-      if (accept && pending == 2'd0)    err_phantom <= 1'b1;
-      if (rise_ev && pending != 2'd0)   err_double  <= 1'b1;
-      // Saturating obligation count, no wrap in either direction.
-      case ({rise_ev, accept})
+      if (accept && busy)             err_busy    <= 1'b1;
+      if (accept && pending == 2'd0)  err_phantom <= 1'b1;
+      if (cmd_rise && pending != 2'd0) err_double <= 1'b1;
+      case ({cmd_rise, accept})
         2'b10:   pending <= (pending == 2'd3) ? 2'd3 : pending + 2'd1;
         2'b01:   pending <= (pending == 2'd0) ? 2'd0 : pending - 2'd1;
         default: pending <= pending;
@@ -160,36 +151,23 @@ module f_handshake (
     end
   end
 
-  // Saturating clocks since the last rise event. Feeds the bounded response
-  // invariant. Reset to a large value, no recent rise.
   reg [3:0] since_rise;
   initial since_rise = 4'hF;
   always @(posedge clk) begin
     if (!rst_n) since_rise <= 4'hF;
-    else if (rise_ev) since_rise <= 4'd0;
+    else if (cmd_rise) since_rise <= 4'd0;
     else if (since_rise != 4'hF) since_rise <= since_rise + 4'd1;
   end
 
-  // Properties. The window opens at rst_n deassert, every cycle the design
-  // is live, so the first handshake after reset is watched.
   always @(posedge clk) begin
     if (rst_n) begin
-      // P1. Never more than one rise in flight.
-      assert (pending <= 2'd1);
-      // P2. No accept without a pending rise. Kills doubles and phantoms.
-      if (accept) assert (pending == 2'd1);
-      // P3. No rise lands while the previous is unconsumed. Kills losses,
-      // including a lockout eating a legal command.
-      if (rise_ev) assert (pending == 2'd0);
-      // P4. Busy never blocks a legal accept.
-      if (accept) assert (!busy);
-      // Sticky forms. A violation in any cycle is a permanent trace, so
-      // the induction cannot certify a property it did not observe.
+      assert (pending <= 2'd1);                    // P1
+      if (accept)   assert (pending == 2'd1);      // P2
+      if (cmd_rise) assert (pending == 2'd0);      // P3
+      if (accept)   assert (!busy);                // P4
       assert (!err_phantom);
       assert (!err_double);
       assert (!err_busy);
-      // Bounded response. An open obligation is young, accept lands 2 or 3
-      // clocks after the rise. A lost command trips this at since_rise 4.
       if (pending == 2'd1) assert (since_rise <= 4'd3);
     end
   end
