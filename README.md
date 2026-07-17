@@ -10,30 +10,57 @@ Built RTL to GDS on open tools, SystemVerilog, cocotb, Icarus, Verilator,
 LibreLane through the Tiny Tapeout flow. Every number below comes from a
 real run.
 
+Implementation was agent assisted. The design decisions, the review
+rulings, the verification strategy, and the adversarial audits are owned by
+me.
+
 ## Current state
 
-Hardened and green through review round five, 2026-07-16, the formal proof
+Hardened and green through five review rounds, 2026-07-16, the formal proof
 mutation gated after two vacuity audits. Not yet submitted to the shuttle,
 submission is a separate decision.
 
-The seal boundary in one sentence. Everything in the table below cites
-one netlist, the final hardened run and its sha256, while the waiver, the
-datasheet, and this README describe that sealed package from outside it,
-they are documentation, not new state.
+## The seal
+
+Every number here cites one netlist, the final hardened run and its sha256.
+The waiver, the datasheet, and this README describe that sealed package from
+outside it, they are documentation, not new state.
+
+| Seal | Value |
+|---|---|
+| Final hardened run | CI 29401092054 |
+| Commit | 49f5f29 |
+| Netlist sha256, the one hash | 5d41493182cd1ece30f2f4a2bdabdf5433400f7b508858161ea6f72db4f13fb0 |
+
+## Numbers
 
 | Number | Value |
 |---|---|
-| Final hardened run | CI 29401092054, commit 49f5f29 |
-| Netlist sha256, the one hash | 5d41493182cd1ece30f2f4a2bdabdf5433400f7b508858161ea6f72db4f13fb0 |
 | Standard cells | 1188, one tile, 64 percent utilization |
-| Die and core area | 17954.7 and 16493.3 um2, the fixed 1x1 tile, sealed run metrics |
+| Die and core area | 17954.7 and 16493.3 um2, the fixed 1x1 tile |
 | Setup, worst corner max_ss_100C_1v60 | plus 1.556 ns at 50 MHz, TNS 0 |
 | Hold, worst corner min_ff_n40C_1v95 | plus 0.111 ns, net of 0.25 ns clock uncertainty and 5 percent derate, TNS 0, all nine corners met |
 | DRC, LVS, antenna | 0, 0, 0 |
 | Tests | 9 datapath plus 14 protocol white box RTL, 9 pin only gate level, all green |
-| Formal | handshake properties proven unbounded, yosys smtbmc with z3, BMC 60, induction closes at step 30, gated on mutation, delete arm, delete lockout, an arm settle regression, and a live control all caught, plus the 24 cell latency grid in the testbench, formal/README.md |
+| Formal | handshake proven unbounded, yosys smtbmc with z3, BMC 60, induction closes at step 30, mutation gated, formal/README.md |
 | Metastability MTBF bound | any tau below 351 ps outlives the universe age, extracted ss tau 134 ps, margin 2.6x, docs/CDC_MTBF.md |
-| Known wart | max slew overage at the three ss corners and max tt, one waiver with two classes, characterized and waived with 1.56 ns of downstream slack, docs/WAIVERS.md |
+
+## The two waived warts
+
+One waiver, W1, two classes of the same max transition finding,
+docs/WAIVERS.md.
+
+- Class 1, datapath fanout. Input slew past the 0.75 ns library limit on
+  operand and multiplier high fanout nets, worst 1.207 ns at
+  max_ss_100C_1v60. It clears on slack. The worst setup path runs through
+  these nets and holds plus 1.556 ns. Charge the full extrapolation excess
+  along the whole path and it still holds plus 0.46 ns, 1.41x inside.
+- Class 2, reset tree. One branch of the synchronized reset fanout, net42,
+  0.899 ns at max_ss. It transitions once per reset, not per cycle, and the
+  reset release paths are met at every corner.
+
+Max cap is clean at all nine corners. The Tiny Tapeout precheck does not
+gate on max transition and read 15 of 15 green.
 
 ## Pin map
 
@@ -58,12 +85,13 @@ pinning test that runs on the hardened netlist.
 ## Layout
 
 ```
-src/    four design modules plus the Tiny Tapeout top and hardening config
-tb/     white box RTL suites, golden model, local only
-test/   pin only suite, runs at RTL and on the hardened netlist in CI
-docs/   SPEC.md the frozen contract, CDC_MTBF.md the metastability bound,
-        HOLD_REPORT.md, FANOUT_FF1.md, info.md the shuttle datasheet,
-        cdc/ the extraction bench, sweeps, and replication gate
+src/     four design modules plus the Tiny Tapeout top and hardening config
+tb/      white box RTL suites, golden model, local only
+test/    pin only suite, runs at RTL and on the hardened netlist in CI
+docs/    SPEC.md the frozen contract, CDC_MTBF.md the metastability bound,
+         HOLD_REPORT.md, GL_TIMING.md, FANOUT_FF1.md, WAIVERS.md,
+         info.md the shuttle datasheet, cdc/ the extraction bench and sweeps
+formal/  the mutation gated handshake proof, README, harness, gate script
 ```
 
 ## How to test
@@ -86,13 +114,38 @@ verilator --lint-only -Wall --top-module tt_um_arnav_mac8 \
 CI runs the Tiny Tapeout GDS action, the shuttle precheck, and the gate
 level suite on every push.
 
-## The story
+## How to run the proof
 
-The build log is TASK_LOG.md, findings first, dead ends kept. The short
-version. Adversarial review with mutation testing is the primary gate, and
-it caught what the green suites could not, an exact rail saturation gap, a
-reset phantom command, an arm bit reading the metastable flop, a lockout
-width that ate a legal command at an alignment no deterministic simulation
-can produce, and a reset pin the harness never promised to synchronize.
-Each fix is pinned by a test where a test can see it, and by a written
-proof where one cannot.
+```
+brew install yosys z3
+
+# the acceptance test, it builds the proof, base passes and every mutation
+# that removes a real protection is caught
+bash formal/mutation_test.sh 60
+```
+
+The full BMC and unbounded induction recipe, the four properties, and the
+mutation table are in formal/README.md.
+
+## The verification story
+
+Adversarial review with mutation testing is the primary gate, and it caught
+what the green suites could not. An exact rail saturation gap, a reset
+phantom command, an arm bit reading the metastable flop, a lockout width
+that ate a legal command at an alignment no deterministic simulation can
+produce, and a reset pin the harness never promised to synchronize. Each
+fix is pinned by a test where a test can see it, and by a written proof
+where one cannot. The handshake proof itself passed vacuously twice before
+it was real. Both audits and the mutation gate that closed them are in
+formal/README.md.
+
+## Deep docs
+
+- docs/SPEC.md, the frozen interface contract, the version lives inside the file.
+- formal/README.md, the mutation gated handshake proof and the two vacuity audits.
+- docs/CDC_MTBF.md, the metastability extraction and the MTBF bound.
+- docs/HOLD_REPORT.md, per corner hold.
+- docs/GL_TIMING.md, the annotated gate level timing.
+- docs/FANOUT_FF1.md, the ff1 fanout evidence.
+- docs/WAIVERS.md, the one waiver and its two classes.
+- docs/info.md, the shuttle datasheet.
