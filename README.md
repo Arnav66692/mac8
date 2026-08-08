@@ -16,9 +16,11 @@ me.
 
 ## Current state
 
-Hardened and green through five review rounds, 2026-07-16, the formal proof
-mutation gated after two vacuity audits. Not yet submitted to the shuttle,
-submission is a separate decision.
+Submitted to the TTSKY26c shuttle. Revisions stay open until 2026-09-07,
+and any revision is gated on the sealed netlist hash below staying
+unchanged. Hardened and green through five review rounds and a submission
+readiness audit, the formal proof mutation gated after two vacuity audits,
+the annotated timing flow rebuilt after a third.
 
 ## The seal
 
@@ -41,9 +43,9 @@ outside it, they are documentation, not new state.
 | Setup, worst corner max_ss_100C_1v60 | plus 1.556 ns at 50 MHz, TNS 0 |
 | Hold, worst corner min_ff_n40C_1v95 | plus 0.111 ns, net of 0.25 ns clock uncertainty and 5 percent derate, TNS 0, all nine corners met |
 | DRC, LVS, antenna | 0, 0, 0 |
-| Tests | 9 datapath plus 14 protocol white box RTL, 9 pin only gate level, all green |
+| Tests | 9 datapath plus 14 protocol white box RTL, 13 pin only gate level, all green |
 | Formal | handshake proven unbounded, yosys smtbmc with z3, BMC 60, induction closes at step 30, mutation gated, formal/README.md |
-| Metastability MTBF bound | any tau below 351 ps outlives the universe age, extracted ss tau 134 ps, margin 2.6x, docs/CDC_MTBF.md |
+| Metastability MTBF bound | any tau below 346 ps outlives the universe age at the 20 MHz worst legal transition rate, extracted ss tau 134 ps, margin 2.58x, docs/CDC_MTBF.md |
 
 ## The two waived warts
 
@@ -96,15 +98,21 @@ formal/  the mutation gated handshake proof, README, harness, gate script
 
 ## How to test
 
+Run from the repo root. Every line below executes verbatim from a fresh
+clone.
+
 ```
-# venv with cocotb 2.0.1 on Python 3.12, outside the repo
+# one time venv, outside the repo, cocotb 2.0.1 needs Python 3.13 or lower
+python3.12 -m venv ~/.venvs/mac8
 source ~/.venvs/mac8/bin/activate
+pip install -r test/requirements.txt
 
 # white box RTL suites
-cd tb && make TB=datapath && make TB=top
+make -C tb TB=datapath
+make -C tb TB=top
 
 # pin only suite at RTL, the same suite CI runs on the netlist
-cd test && make
+make -C test
 
 # lint
 verilator --lint-only -Wall --top-module tt_um_arnav_mac8 \

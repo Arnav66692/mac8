@@ -84,9 +84,14 @@ state can launder it away.
 
 ## How to run
 
+Run from the repo root. One SMT file name start to finish, and the build
+directory is created first, both audit fixes, the old recipe wrote
+f_handshake.smt2 and then read base.smt2 from a directory nothing created.
+
 ```
 brew install yosys z3
 
+mkdir -p formal/build
 yosys -q -p "
 read_verilog -formal -sv formal/f_handshake.sv src/mac8_sync.sv src/mac8_ctrl.sv
 prep -top f_handshake
@@ -95,9 +100,9 @@ async2sync
 opt_clean
 write_smt2 -wires formal/build/f_handshake.smt2
 "
-yosys-smtbmc -s z3 -t 60 formal/build/base.smt2      # BMC base
-yosys-smtbmc -s z3 -i -t 40 formal/build/base.smt2   # induction
-bash formal/mutation_test.sh 60                       # the gate
+yosys-smtbmc -s z3 -t 60 formal/build/f_handshake.smt2      # BMC base
+yosys-smtbmc -s z3 -i -t 40 formal/build/f_handshake.smt2   # induction
+bash formal/mutation_test.sh 60                              # the gate
 ```
 
 ## Result, 2026-07-16
