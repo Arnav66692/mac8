@@ -1,7 +1,7 @@
 # Makefile
 # One make runs both cocotb suites with Icarus Verilog.
 # TB=datapath runs the unit suite against mac8_datapath.
-# TB=top runs the protocol suite against mac8_top.
+# TB=top runs the protocol suite against tt_um_arnav_mac8.
 # The default runs both in sequence, separate build dirs and results.
 # Activate the venv first, source ~/.venvs/mac8/bin/activate.
 # Source paths are relative on purpose. The vault path contains spaces

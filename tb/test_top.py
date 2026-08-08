@@ -1,6 +1,6 @@
 # test_top.py
-# Protocol level tests for tt_um_arnav_mac8, the module formerly named
-# mac8_top. External ports only for stimulus.
+# Protocol level tests for tt_um_arnav_mac8. External ports only for
+# stimulus.
 # The driver obeys the SPEC.md rules. Data and command first, then the
 # strobe rise. Strobe high at least 3 core clocks, low at least 2 before
 # the next rise. Data stable while the strobe is high plus 2 clocks after

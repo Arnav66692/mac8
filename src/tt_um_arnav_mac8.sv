@@ -3,8 +3,7 @@
 // Pin map per docs/SPEC.md, frozen. Wiring and instances only, no logic.
 // uio bits 3 to 0 are inputs, bits 7 to 4 are outputs, direction static.
 // ena is accepted and ignored per the spec.
-// The tt_um_ prefix is the shuttle top module requirement. This module was
-// mac8_top before F1, renamed not wrapped, the port list already matched.
+// The tt_um_ prefix is the shuttle top module requirement.
 // rst_n from the harness is asynchronous, round two item 6, so it crosses
 // mac8_rst_sync before any module sees it. Reasoning in that file.
 
