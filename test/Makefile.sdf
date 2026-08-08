@@ -1,8 +1,11 @@
-# Timing annotated gate level run, round three item 8. Not CI, run by hand.
-# Result recorded in docs/GL_TIMING.md, pass at max_ss_100C_1v60. Needs the
-# corner SDF copied to sdf_max_ss.sdf and the netlist to gate_level_netlist.v.
+# Timing annotated gate level run. Not CI, run by hand through
+# scripts/run_gl_sdf.sh, which owns the pass or fail decision. Result
+# recorded in docs/GL_TIMING.md. Needs the corner SDF at sdf_max_ss.sdf
+# and the powered netlist at gate_level_netlist.v.
+# Both mode flags are set before the include, so every variable the cocotb
+# makefiles read is final when they are read. Assignments after the include
+# land after the rule targets are fixed and split the build across two
+# directories, which is how incident 10 stayed hidden.
 GATES := yes
+SDF   := yes
 include Makefile
-COMPILE_ARGS := $(filter-out -DFUNCTIONAL,$(COMPILE_ARGS)) -gspecify
-VERILOG_SOURCES += sdf_annotate.v
-SIM_BUILD := sim_build_sdf

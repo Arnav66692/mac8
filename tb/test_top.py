@@ -16,6 +16,7 @@
 # test_long_strobe_single_fire, test_busy_pulse_on_mac, test_ringing_edge_lockout.
 # Reads u_dp.out_sel_q, the byte select. assert_reset_state.
 
+import os
 import random
 
 import cocotb
@@ -24,7 +25,9 @@ from cocotb.triggers import ClockCycles, FallingEdge, RisingEdge, Timer
 
 from golden import INT24_MAX, Golden, apply_command
 
-CLK_PERIOD_NS = 10
+# 10 ns is the sim speed default for the RTL suites. The SDF timing run
+# exports 20 ns, the project clock the corner is signed at, docs/GL_TIMING.md.
+CLK_PERIOD_NS = float(os.environ.get("MAC8_CLK_PERIOD_NS", "10"))
 
 CMD_NOP = 0
 CMD_CLR = 1
@@ -48,6 +51,16 @@ RANDOM_SEED = 20260714
 PHASE_SEED = 20260713
 _phase_rng = random.Random(PHASE_SEED)
 _phase_logged = False
+
+
+def timer_ns(ns):
+    """Timer at 0.1 ns quantization, issued in integer picoseconds.
+
+    Arbitrary decimal ns values trip cocotb's exact representation check
+    at 1 ps precision, 16.1 ns is not a whole number of steps in binary
+    float. Quantize to 0.1 ns and hand the simulator integer ps. Found
+    when the SDF run moved the suite to the 20 ns project clock."""
+    return Timer(int(round(ns * 10)) * 100, "ps")
 
 
 async def start_and_reset(dut):
@@ -86,9 +99,9 @@ async def command(dut, cmd, data=0, high=3, low=2, setup=1):
     dut.uio_in.value = cmd & 0x7
     if setup:
         await ClockCycles(dut.clk, setup)
-    # Round to 0.1 ns so the offset is an exact number of simulator steps,
-    # still off the 10 ns clock grid.
-    await Timer(round(_phase_rng.uniform(0.5, CLK_PERIOD_NS - 0.5), 1), "ns")
+    # Round to 0.1 ns so the offset stays reproducible in the log, still
+    # off the clock grid. timer_ns converts it to exact integer ps.
+    await timer_ns(round(_phase_rng.uniform(0.5, CLK_PERIOD_NS - 0.5), 1))
     dut.uio_in.value = STROBE | (cmd & 0x7)
     await ClockCycles(dut.clk, high)
     dut.uio_in.value = cmd & 0x7
@@ -643,7 +656,7 @@ async def drive_latency_pair(dut, spacing, slip1, slip2, base_shift_ns):
     count_task = cocotb.start_soon(count_accepts(dut, n2 + 8))
     now = 0.0
     for t, val in events:
-        await Timer(round(t - now, 1), "ns")
+        await timer_ns(round(t - now, 1))
         now = t
         dut.uio_in.value = val
     accepts = await count_task

@@ -36,6 +36,26 @@ VERILOG_SOURCES += gate_level_netlist.v
 
 endif
 
+# Timing annotated gate level mode, SDF=yes on top of GATES=yes. Everything
+# is set here, before the cocotb include, so rule targets and recipe paths
+# agree on one build directory. The hook module is named as an elaboration
+# root explicitly. cocotb passes only -s tb, and iverilog elaborates only
+# named roots, so without the -s below the hook compiles but never runs.
+# That is incident 10, the round three timing run had zero annotation.
+ifeq ($(SDF),yes)
+SIM_BUILD       = sim_build/sdf
+SDF_FILE       ?= sdf_max_ss.sdf
+COMPILE_ARGS    := $(filter-out -DFUNCTIONAL,$(COMPILE_ARGS))
+COMPILE_ARGS    += -gspecify -ginterconnect
+COMPILE_ARGS    += -s sdf_annotate_hook
+COMPILE_ARGS    += -Psdf_annotate_hook.SDF_FILE=\"$(SDF_FILE)\"
+VERILOG_SOURCES += sdf_annotate.v
+# The SDF corner is signed at the project clock, 20 ns, 50 MHz. The RTL
+# suite default of 10 ns is a sim speed choice and stays untouched.
+MAC8_CLK_PERIOD_NS ?= 20
+export MAC8_CLK_PERIOD_NS
+endif
+
 # Allow sharing configuration between design and testbench via `include`:
 COMPILE_ARGS 		+= -I$(SRC_DIR)
 
