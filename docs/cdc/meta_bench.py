@@ -12,6 +12,18 @@
 # rail band after the clock edge.
 #
 # Sweep data generation only. No tau fit, no T0, no MTBF text.
+#
+# Environment variables, the complete set this script reads.
+#   CELL_SPICE  required, path to the extracted dfxtp_2 subckt
+#   PDK_ROOT    sky130A location, default ~/.volare
+#   NGSPICE     ngspice binary, default /opt/homebrew/bin/ngspice
+#   TRAN_TMAX, EDGE_CLK, EDGE_D, RELTOL, METHOD  solver and stimulus knobs,
+#   defaults reproduce the original decks byte for byte
+#
+# Hardened in the submission readiness audit. ngspice failures raise, any
+# grid point that produces no data is fatal, and the sweep CSV must carry
+# one full row per requested point or the run exits nonzero. A silent
+# 19 point sweep can no longer pose as a 20 point result.
 
 import hashlib
 import os
@@ -80,7 +92,7 @@ def run_grid(corner, td_list):
     deckpath = os.path.join(outdir, "grid.sp")
     open(deckpath, "w").write(deck)
     r = subprocess.run([NGSPICE, "-b", deckpath], capture_output=True, text=True,
-                       timeout=3600)
+                       timeout=3600, check=True)
     results = []
     for i, td in enumerate(td_list):
         path = os.path.join(outdir, f"p_{i:04d}.txt")
@@ -94,13 +106,13 @@ def run_grid(corner, td_list):
                     except ValueError:
                         pass
         results.append((td, pts))
-    convergence_note = ""
-    if any(not pts for _, pts in results):
-        missing = sum(1 for _, pts in results if not pts)
-        convergence_note = f"{missing} of {len(td_list)} points produced no data"
+    missing = sum(1 for _, pts in results if not pts)
+    if missing:
         tail = "\n".join(r.stderr.splitlines()[-6:])
-        sys.stderr.write(f"CONVERGENCE ISSUE: {convergence_note}\n{tail}\n")
-    return results, deck, convergence_note
+        sys.stderr.write(
+            f"FATAL: {missing} of {len(td_list)} points produced no data\n{tail}\n")
+        sys.exit(1)
+    return results, deck
 
 
 def final_q(pts, vdd):
@@ -121,7 +133,7 @@ def resolution_ns(pts, vdd):
 def find_balance(corner, center, span, step):
     vdd = CORNERS[corner][0]
     tds = [center + k * step for k in range(-int(span / step), int(span / step) + 1)]
-    results, _, _ = run_grid(corner, tds)
+    results, _ = run_grid(corner, tds)
     prev = None
     for td, pts in results:
         fq = final_q(pts, vdd)
@@ -150,22 +162,30 @@ def main():
     offs = [1e-15, 2e-15, 5e-15, 10e-15, 20e-15, 50e-15,
             100e-15, 200e-15, 500e-15, 1000e-15]
     td_list = [b4 - o for o in reversed(offs)] + [b4 + o for o in offs]
-    results, deck, note = run_grid(corner, td_list)
+    results, deck = run_grid(corner, td_list)
     deckhash = hashlib.sha256(deck.encode()).hexdigest()[:8]
+
+    # Full row schema. One row per requested point, every field present.
+    # run_grid already dies on missing data, this holds the CSV to it.
+    rows = []
+    for td, pts in results:
+        off = (td - b4) * 1e15
+        fq = final_q(pts, vdd)
+        rt = resolution_ns(pts, vdd)
+        if fq is None or rt is None:
+            sys.stderr.write(f"FATAL: incomplete row at offset {off:+.2f} fs\n")
+            sys.exit(1)
+        rows.append(f"{corner},{off:+.2f},{fq:.4f},{rt:.4f}\n")
+    if len(rows) != len(td_list):
+        sys.stderr.write(
+            f"FATAL: {len(rows)} rows for {len(td_list)} requested points\n")
+        sys.exit(1)
 
     outname = f"sweep_{corner}_{deckhash}.csv"
     with open(outname, "w") as f:
         f.write("corner,offset_fs,final_q,resolution_ns\n")
-        for td, pts in results:
-            if not pts:
-                continue
-            off = (td - b4) * 1e15
-            fq = final_q(pts, vdd)
-            rt = resolution_ns(pts, vdd)
-            f.write(f"{corner},{off:+.2f},{fq:.4f},{rt:.4f}\n")
+        f.writelines(rows)
     sys.stderr.write(f"wrote {outname}, balance {b4*1e9:.9f} ns\n")
-    if note:
-        sys.stderr.write(f"note: {note}\n")
     print(outname)
 
 

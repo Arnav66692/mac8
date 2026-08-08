@@ -34,23 +34,30 @@ one parse is about 40 seconds, a sim is under a second.
 ## How to run
 
 ```
-# Extract the cell subckt once, from the PDK combined cell library.
+# The extracted cell subckt is committed as dfxtp_2.spice in this
+# directory. To re extract it from the PDK combined cell library:
 CELL=~/.volare/sky130A/libs.ref/sky130_fd_sc_hd/spice/sky130_fd_sc_hd.spice
 awk '/^\.subckt sky130_fd_sc_hd__dfxtp_2 /{f=1} f{print} /^\.ends/{if(f)exit}' \
   "$CELL" > dfxtp_2.spice
 
-# Coarse sanity sweep at tt, one session.
+# Run one corner. The script walks its own balance ladder, writes
+# sweep_<corner>_<deckhash>.csv itself, and prints that filename. Do not
+# redirect stdout, the CSV is not on stdout.
 export CELL_SPICE=$PWD/dfxtp_2.spice
-export BAL_CENTER=20e-9 BAL_STEP=1e-12 BAL_NPTS=140
-python3 meta_bench.py tt > sweep_tt.csv
-
-# To zoom on the balance for the fine resolution tail, narrow the window.
-export BAL_CENTER=19.9765e-9 BAL_STEP=5e-15 BAL_NPTS=200
-python3 meta_bench.py tt > zoom_tt.csv
+python3 meta_bench.py tt
+python3 meta_bench.py ss
 ```
 
 Corners are tt at 1.80 V 25 C and ss at 1.60 V 100 C, pass the corner as the
 argument. The PDK comes from volare.
+
+Environment variables the script reads, the complete set. CELL_SPICE,
+required. PDK_ROOT, default ~/.volare. NGSPICE, the binary path. TRAN_TMAX,
+EDGE_CLK, EDGE_D, RELTOL, METHOD, the stimulus and solver knobs whose
+defaults reproduce the original decks byte for byte. The balance ladder is
+fixed in the script, it takes no environment overrides. Any grid point that
+fails to converge is fatal, the script exits nonzero rather than writing a
+short CSV.
 
 ## Refined bench, round 1.5 item 4
 
