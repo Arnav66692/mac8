@@ -10,7 +10,7 @@
 # weakened, checks that need internal signals live in tb/ only.
 
 import cocotb
-from cocotb.triggers import ClockCycles, FallingEdge, Timer
+from cocotb.triggers import ClockCycles, FallingEdge, RisingEdge, Timer
 
 from golden import INT24_MAX, INT24_MIN, Golden, apply_command
 from test_top import (
@@ -34,6 +34,7 @@ from test_top import (
     run_reset_pin_state,
     start_and_reset,
     start_clock,
+    timer_ns,
 )
 
 
@@ -491,3 +492,57 @@ async def test_cmd_hold_window(dut):
     golden = apply_command(golden, CMD_SEL_LO, 0)
     await check_pins(dut, golden, "cmd hold window probe")
     assert golden.acc == 3 * 11 + data * 11, "golden self check"
+
+
+@cocotb.test()
+async def test_sel_read_floor(dut):
+    """Pins the v0.5 SEL read rule, sample uo_out no earlier than 5 clocks
+    after the strobe rise. The rise is forced onto each side of a sampling
+    edge, the latency grid technique, so both synchronizer resolutions are
+    exercised, and the byte sampled at exactly rise plus 5 clocks must be
+    fresh in both. The stale read at the old 4 clock floor is demonstrated
+    by test/probe_sel_boundary.py, kept outside this suite because its
+    clk to Q race is corner dependent, the spec v0.5 changelog cites it as
+    the contract evidence."""
+    await start_and_reset(dut)
+
+    for slip, name in ((0, "fast, resolves in 2"), (1, "slow, resolves in 3")):
+        await reset_only(dut)
+        golden = Golden()
+
+        # acc to 10000, 0x002710. Low byte 0x10 shows on the reset default
+        # select, mid byte 0x27 is the fresh value SEL_MID must deliver.
+        for cmd, val in ((CMD_LDA, 100), (CMD_LDB, 100)):
+            await command(dut, cmd, data=val)
+            golden = apply_command(golden, cmd, val)
+        await command(dut, CMD_MAC)
+        golden = apply_command(golden, CMD_MAC, 0)
+        await command(dut, CMD_SEL_LO)
+        golden = apply_command(golden, CMD_SEL_LO, 0)
+        await ClockCycles(dut.clk, 2)
+        assert int(dut.uo_out.value) == 0x10, "setup failed, low byte not shown"
+
+        # SEL_MID with the rise forced onto one side of a sampling edge.
+        dut.ui_in.value = 0
+        dut.uio_in.value = CMD_SEL_MID
+        await ClockCycles(dut.clk, 2)
+        await RisingEdge(dut.clk)
+        if slip == 0:
+            await timer_ns(CLK_PERIOD_NS - 0.1)
+        else:
+            await timer_ns(CLK_PERIOD_NS + 0.1)
+        dut.uio_in.value = STROBE | CMD_SEL_MID
+
+        # The earliest legal sample under the v0.5 rule.
+        await timer_ns(5 * CLK_PERIOD_NS)
+        sampled = int(dut.uo_out.value)
+        assert sampled == 0x27, (
+            f"SEL read at the 5 clock floor, {name}, read {sampled:#04x}, "
+            "want the fresh mid byte 0x27"
+        )
+
+        # Finish the pulse legally and settle.
+        dut.uio_in.value = CMD_SEL_MID
+        await ClockCycles(dut.clk, 3)
+        dut.uio_in.value = 0
+        await ClockCycles(dut.clk, 2)

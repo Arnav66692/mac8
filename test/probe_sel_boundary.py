@@ -1,16 +1,21 @@
 # probe_sel_boundary.py
-# Submission readiness audit item, the SEL read boundary. Not part of the
-# CI suite while the result is under ruling. Pin only, phase swept.
+# Contract evidence for the spec v0.5 read floor correction, cited from
+# the SPEC.md changelog. Not part of the CI suite, on purpose. The stale
+# read it demonstrates rides the clk to Q race at the old 4 clock floor,
+# which is corner dependent, so a CI assertion on it would be fragile.
+# The CI pinning test for the ruled 5 clock floor is test_sel_read_floor
+# in test.py. Pin only, phase swept.
 #
-# The spec read rule says sample uo_out no earlier than 4 clocks after
+# The v0.4 read rule said sample uo_out no earlier than 4 clocks after
 # the SEL strobe rise, derived as 3 clocks for the sync path plus 1 for
 # the registered output. In the slow resolution alignment the output
 # register launches the fresh byte at that same 4 clock mark, so the rule
-# licenses sampling at the launch instant. This probe forces both
+# licensed sampling at the launch instant. This probe forces both
 # synchronizer latencies per edge, the latency grid technique, a rise
 # 0.1 ns before a sampling edge resolves fast, 0.1 ns after resolves
-# slow, then samples uo_out at exactly the documented floor. It also
-# samples one clock later and logs both values as data for the ruling.
+# slow, then samples uo_out at exactly the old floor. It reads stale in
+# the slow alignment on the functional gate netlist and on the annotated
+# netlist at max_ss_100C_1v60, and fresh one clock later, the v0.5 floor.
 #
 #   RTL         make COCOTB_TEST_MODULES=probe_sel_boundary
 #   functional  make GATES=yes COCOTB_TEST_MODULES=probe_sel_boundary
@@ -36,8 +41,10 @@ from test_top import (
 
 
 @cocotb.test()
-async def probe_sel_read_at_documented_floor(dut):
-    """Sample uo_out at exactly rise plus 4 clocks, both latencies."""
+async def probe_sel_read_at_old_floor(dut):
+    """Sample uo_out at exactly rise plus 4 clocks, the v0.4 floor, both
+    latencies. On the gate netlist the slow alignment fails the assert,
+    that failure is the demonstration this probe exists to reproduce."""
     await start_and_reset(dut)
     results = {}
 
@@ -68,8 +75,8 @@ async def probe_sel_read_at_documented_floor(dut):
             await timer_ns(CLK_PERIOD_NS + 0.1)
         dut.uio_in.value = STROBE | CMD_SEL_MID
 
-        # The documented earliest legal sample, exactly 4 clocks after
-        # the rise, then one clock later for the ruling record.
+        # The old v0.4 floor, exactly 4 clocks after the rise, then one
+        # clock later, the ruled v0.5 floor, for the record.
         await timer_ns(4 * CLK_PERIOD_NS)
         at_floor = int(dut.uo_out.value)
         await timer_ns(CLK_PERIOD_NS)
@@ -88,6 +95,7 @@ async def probe_sel_read_at_documented_floor(dut):
 
     stale = {k: v for k, v in results.items() if v[0] != 0x27}
     assert not stale, (
-        f"stale read at the documented 4 clock floor: {stale}, "
-        "the spec floor licenses sampling at the output register launch instant"
+        f"stale read at the old 4 clock floor: {stale}, "
+        "the v0.4 floor licensed sampling at the output register launch instant, "
+        "corrected to 5 clocks in spec v0.5"
     )
