@@ -63,21 +63,42 @@ def timer_ns(ns):
     return Timer(int(round(ns * 10)) * 100, "ps")
 
 
-async def start_and_reset(dut):
-    """Start the clock and apply reset per the v0.4 reset rule.
+# One retained clock driver. Tests that reset in a loop used to stack a
+# fresh Clock task per iteration on the same signal. Harmless output, dirty
+# hygiene, and every stacked task keeps running. start_clock cancels the
+# previous driver before starting the next, so exactly one drives at any
+# time. Loops reset with reset_only and never touch the clock.
+_clock_task = None
+
+
+def start_clock(dut):
+    """Start the one clock driver, cancelling any previous one."""
+    global _clock_task
+    if _clock_task is not None:
+        _clock_task.cancel()
+    _clock_task = cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, "ns").start())
+
+
+async def reset_only(dut):
+    """Apply reset per the v0.4 reset rule, clock already running.
 
     rst_n crosses a two flop synchronizer inside the design, round two item
     6, so assertion needs 3 clocks to act, 2 to cross plus 1 to clear, and
     the arm settles on the fifth clock after pad release. Hold reset low 4
     clocks, then hold strobe low 5 clocks after release before any rise."""
-    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, "ns").start())
-    dut.ena.value = 1
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     dut.rst_n.value = 0
     await ClockCycles(dut.clk, 4)
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
+
+
+async def start_and_reset(dut):
+    """Start the retained clock and apply reset, the per test entry."""
+    start_clock(dut)
+    dut.ena.value = 1
+    await reset_only(dut)
 
 
 async def command(dut, cmd, data=0, high=3, low=2, setup=1):
@@ -515,7 +536,7 @@ async def measure_one_fire(dut, cmd, window=8):
 async def test_strobe_high_across_reset(dut):
     """Strobe held high across reset release fires no command. Then a
     clean low, high sequence fires exactly one, at normal latency."""
-    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, "ns").start())
+    start_clock(dut)
     dut.ena.value = 1
     # A nonzero command and data held high with the strobe through reset.
     dut.ui_in.value = 0x5A
@@ -666,6 +687,7 @@ async def drive_latency_pair(dut, spacing, slip1, slip2, base_shift_ns):
 @cocotb.test()
 async def test_latency_grid(dut):
     """Every latency combination at spacings 4, 5, 6, both alignments."""
+    await start_and_reset(dut)
     grid = []
     for spacing in (4, 5, 6):
         for slip1 in (0, 1):
@@ -673,7 +695,7 @@ async def test_latency_grid(dut):
                 offset = spacing + slip2 - slip1
                 expect = 1 if offset <= 3 else 2
                 for base in (0, 1):
-                    await start_and_reset(dut)
+                    await reset_only(dut)
                     golden = Golden()
                     await command(dut, CMD_LDA, data=6)
                     golden = apply_command(golden, CMD_LDA, 6)
