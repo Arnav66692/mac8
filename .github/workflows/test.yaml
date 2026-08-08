@@ -28,8 +28,14 @@ jobs:
           cd test
           make clean
           make
-          # make will return success even if the test fails, so check for failure in the results.xml
-          ! grep failure results.xml
+
+      # The old gate was "! grep failure results.xml", which passes when
+      # the file is missing, truncated, or carries <error> entries. The
+      # script requires a nonempty well formed file, exactly the declared
+      # test count from the @cocotb.test decorators, zero failures, zero
+      # errors.
+      - name: Gate on results.xml
+        run: python3 scripts/check_results.py test/results.xml --expect-from-tests test/test.py
 
       - name: Test Summary
         uses: test-summary/action@v2.4
