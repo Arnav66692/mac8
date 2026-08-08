@@ -72,10 +72,13 @@ voltage point is needed.
 The slack feeding the exponent carries clock uncertainty. t is required
 minus arrival, and required already subtracts the 0.25 ns uncertainty and
 the library setup time, so t is net of both, conservative direction.
-f_data is an input assumption, not a derived value, 10 MHz worst legal,
-one strobe rise per 5 clocks at 50 MHz. The denominator is linear in it,
-halving the rate doubles the MTBF, it must be stated, never reverse
-engineered from the answer.
+f_data is an input assumption, not a derived value, 20 MHz worst legal.
+The formula counts asynchronous input transitions and a strobe pulse has
+two, the rise and the fall, so one pulse per 5 clocks at 50 MHz is 20 MHz
+of transitions, not 10. Corrected in the submission readiness audit, the
+earlier 10 MHz counted rises only against the doc's own transition rate
+logic. The denominator is linear in it, halving the rate doubles the
+MTBF, it must be stated, never reverse engineered from the answer.
 
 Async input inventory, complete. Three inputs cross into the clock domain.
 The strobe, through two flops with edge detect, the arm bit, and the
@@ -89,26 +92,28 @@ mac8_sync. The reset synchronizer, rst_ff1 and rst_ff2 in mac8_rst_sync,
 instances _1636_ and _1635_ in the final netlist, is the same
 sky130_fd_sc_hd__dfxtp_2 cell, so tau and T0 carry over. It is outside
 the f_data rate model above, its event rate is one transition per reset,
-not 10 MHz, so its MTBF sits about seven orders of magnitude beyond the
+not 20 MHz, so its MTBF sits many orders of magnitude beyond the
 strobe bound at the same slack scale. Stated for scope, the headline
 number is the strobe path.
 
-### Threshold delta trace, round two to the final run
+### Threshold delta trace, round two to the final package
 
-Last round the headline read threshold 353.77 ps and margin 2.69x. The
-final package reads 351.04 ps and 2.62x. The 2.73 ps delta decomposes into
-two moves, both traceable.
+Round two read threshold 353.77 ps and margin 2.69x. The final package
+reads 346.24 ps and 2.58x. The delta decomposes into three moves, all
+traceable, and the round two moves were computed at the superseded 10 MHz
+rate their rows state.
 
 | Move | Threshold | Traces to |
 |---|---|---|
-| Round two basis, t 17.457877 ns, combined T0 12.42 ps | 353.77 ps | run 29352875225, commit e82437b |
-| Slack moved to 17.544488 ns, same T0 | 355.53 ps, plus 1.76 | run 29401092054, commit 49f5f29, the F3 width fix and the rst_n synchronizer re placed the netlist, launch 0.774971 to 0.735318, data path delay 2.014390 to 1.933987 |
-| T0 promoted to the worst per side 23.34 ps | 351.04 ps, minus 4.49 | the round two conservative headline ruling, ln factor 49.348 to 49.979 |
+| Round two basis, t 17.457877 ns, combined T0 12.42 ps, f_data 10 MHz | 353.77 ps | run 29352875225, commit e82437b |
+| Slack moved to 17.544488 ns, same T0 and rate | 355.53 ps, plus 1.76 | run 29401092054, commit 49f5f29, the F3 width fix and the rst_n synchronizer re placed the netlist, launch 0.774971 to 0.735318, data path delay 2.014390 to 1.933987 |
+| T0 promoted to the worst per side 23.34 ps, same rate | 351.04 ps, minus 4.49 | the round two conservative headline ruling, ln factor 49.348 to 49.979 |
+| f_data corrected to the transition rate, 10 to 20 MHz | 346.24 ps, minus 4.80 | the submission readiness audit, both edges of a strobe pulse count, ln factor 49.979 to 50.672 |
 
 The refit did not move tau. The sweep CSVs and the fit are unchanged from
 round two, tau reads 131.49 combined and 134.19 worst per side in both.
-The ratio moved 2.69 to 2.62 for the same two reasons plus the tau basis
-promotion, 131.49 to 134.19, in the denominator of the margin.
+The ratio moved 2.69 to 2.58 through the three moves above plus the tau
+basis promotion, 131.49 to 134.19, in the denominator of the margin.
 
 Free margin, noted, not claimed. The bench measures band exit on the master
 latch node, upstream of the Q pin that STA references. A real failure needs
@@ -165,47 +170,47 @@ Inputs, signoff corner ss 100C 1v60, headline conservative pair.
 |---|---|---|
 | t | 17.544488 ns | ff1 to ff2 setup slack, STA table above, final run |
 | f_clk | 50 MHz | spec nominal clock |
-| f_data | 10 MHz | worst legal command rate, 5 clock rise to rise minimum |
+| f_data | 20 MHz | worst legal transition rate, both edges of one strobe pulse per 5 clocks |
 | T0 | 23.34 ps | extracted, ss worst per side fit, the headline |
 | MTBF floor A | 4.35e17 s | age of the universe |
 
 Steps.
 
-1. D equals 23.34e-12 times 50e6 times 10e6 equals 11670 per second.
+1. D equals 23.34e-12 times 50e6 times 20e6 equals 23340 per second.
 2. Require e to the (t over tau) over D greater than A.
 3. Multiply both sides by D. e to the (t over tau) greater than A times D.
-4. A times D equals 4.35e17 times 11670 equals 5.076e21.
-5. Take ln of both sides. t over tau greater than ln(5.076e21) equals 49.979.
-6. Solve for tau. tau less than t over 49.979.
-7. tau threshold equals 17.544488 ns over 49.979 equals 351.04 ps.
+4. A times D equals 4.35e17 times 23340 equals 1.015e22.
+5. Take ln of both sides. t over tau greater than ln(1.015e22) equals 50.672.
+6. Solve for tau. tau less than t over 50.672.
+7. tau threshold equals 17.544488 ns over 50.672 equals 346.24 ps.
 
 | Result | Value |
 |---|---|
-| Threshold tau, MTBF above the universe age | 351.04 ps |
+| Threshold tau, MTBF above the universe age | 346.24 ps |
 | Headline extracted tau at ss, worst per side | 134.19 ps |
-| Margin, threshold over headline | 2.62x |
-| Margin against the combined ss tau, 131.49 ps | 2.67x |
-| Threshold on the combined pair, T0 12.42 ps | 355.53 ps, margin 2.70x, reference |
-| Threshold if T0 doubles to 46.68 ps | 346.24 ps, the exponent dominates |
-| Threshold at the real slew rerun worst per side T0, 32.66 ps | 348.69 ps, same story |
+| Margin, threshold over headline | 2.58x |
+| Margin against the combined ss tau, 131.49 ps | 2.63x |
+| Threshold on the combined pair, T0 12.42 ps | 350.60 ps, margin 2.67x, reference |
+| Threshold if T0 doubles to 46.68 ps | 341.56 ps, the exponent dominates |
+| Threshold at the real slew rerun worst per side T0, 32.66 ps | 343.95 ps, same story |
 
-Sensitivity against an extraction miss, headline basis, D 11670 per second,
+Sensitivity against an extraction miss, headline basis, D 23340 per second,
 t 17.544488 ns. The Beer and Ginosar 65 nm test chip, The Devolution of
 Synchronizers, IEEE ASYNC 2010, measured 3.3x over its own prediction, so
 the table brackets a miss of that size.
 
 | tau | MTBF | Read as |
 |---|---|---|
-| 134.19 ps, extracted | 5.2e52 s | 1.2e35 universe ages |
-| 268.4 ps, 2x miss | 2.1e24 s | 6.7e16 years, 4.8 million universe ages |
-| 442.8 ps, 3.3x miss, the Beer and Ginosar factor | 1.4e13 s | about 437 thousand years, silicon outlived |
-| 536.8 ps, 4x miss | 1.3e10 s | about 426 years, still past any part lifetime |
+| 134.19 ps, extracted | 2.6e52 s | 6.0e34 universe ages |
+| 268.4 ps, 2x miss | 1.0e24 s | 3.3e16 years, 2.4 million universe ages |
+| 442.8 ps, 3.3x miss, the Beer and Ginosar factor | 6.9e12 s | about 219 thousand years, silicon outlived |
+| 536.8 ps, 4x miss | 6.7e9 s | about 212 years, still past any part lifetime |
 
 The bound survives a 65 nm sized extraction miss. The measured 3.3x factor
-from the Beer and Ginosar chip leaves about 437 thousand years, roughly
-4.4e3 centuries, about three and a half orders of magnitude past a
-century. Only a miss beyond 4x brings the number into engineering range at
-all, and it is still centuries.
+from the Beer and Ginosar chip leaves about 219 thousand years, roughly
+2.2e3 centuries, more than three orders of magnitude past a century. Only
+a miss beyond 4x brings the number into engineering range at all, and it
+is still centuries.
 
 ## MTBF for the strobe synchronizer
 
@@ -217,7 +222,7 @@ MTBF = e^(t/tau) / (T0 · f_clk · f_data)
 
 Here, t is the settling time the design grants ff1 before ff2 samples it. tau is the metastability resolution time constant of the flop. T0 is the effective metastability window of the flop. f_clk is the sampling clock frequency. f_data is the asynchronous input transition rate.
 
-Use signoff numbers, not convenient numbers. The settling time t is the STA setup slack on the ff1 to ff2 path from the hardened netlist, 17.54 ns at the ss signoff corner. That slack already includes the inserted hold buffer and the reset AND gate, so those cells are priced into the margin. The clock is 50 MHz. The async transition rate is 10 MHz, one legal strobe rise every five clocks, the worst the spec permits. That is worst legal traffic, not typical demo-board traffic, so it makes the answer more pessimistic.
+Use signoff numbers, not convenient numbers. The settling time t is the STA setup slack on the ff1 to ff2 path from the hardened netlist, 17.54 ns at the ss signoff corner. That slack already includes the inserted hold buffer and the reset AND gate, so those cells are priced into the margin. The clock is 50 MHz. The async transition rate is 20 MHz, both edges of one legal strobe pulse every five clocks, the worst the spec permits. f_data counts transitions and a pulse has two. That is worst legal traffic, not typical demo-board traffic, so it makes the answer more pessimistic.
 
 The flop parameters are extracted, not looked up, because no foundry ships them directly. The extracted values are tau 42.8 ps and T0 20.2 ps at nominal, and tau 134.2 ps and T0 23.3 ps at the ss corner, the worst per side pair. The combined ss fit reads tau 131.5 ps and T0 12.4 ps, but the combined fit is a two line model violation by our own R squared diagnosis, the two resolve directions carry different intercepts, so the worst per side pair is the honest number. The extraction method is SPICE on the exact dfxtp_2 cell from the netlist, probing the master latch node, with the deck hash recorded in the deliverable table.
 
@@ -225,11 +230,11 @@ Use this as a bound, not just a point estimate. The question is how bad tau coul
 
 tau_threshold = t / ln(age_of_universe · T0 · f_clk · f_data)
 
-Using the ss corner denominator from the report, T0 · f_clk · f_data = 11670 per second, and the age of the universe, 4.35e17 seconds, the threshold is:
+Using the ss corner denominator from the report, T0 · f_clk · f_data = 23340 per second, and the age of the universe, 4.35e17 seconds, the threshold is:
 
-tau_threshold = 17.54 ns / ln((4.35e17) · 11670) = 351.0 ps
+tau_threshold = 17.54 ns / ln((4.35e17) · 23340) = 346.2 ps
 
-The extracted ss value is tau 134.2 ps, so the real extracted value is 351.0 / 134.2 = 2.62 times inside the threshold. The bound reads in three tiers. The universe age line holds through any extraction miss up to 2.62x. The one measured precedent, the Beer and Ginosar 65 nm chip, missed its own prediction by 3.3x, which lands past that line at 1.4e13 seconds, about 437 thousand years, the table row. Even a 4x miss leaves about 426 years on a tile whose worst failure is a glitch on a demo board.
+The extracted ss value is tau 134.2 ps, so the real extracted value is 346.2 / 134.2 = 2.58 times inside the threshold. The bound reads in three tiers. The universe age line holds through any extraction miss up to 2.58x. The one measured precedent, the Beer and Ginosar 65 nm chip, missed its own prediction by 3.3x, which lands past that line at 6.9e12 seconds, about 219 thousand years, the table row. Even a 4x miss leaves about 212 years on a tile whose worst failure is a glitch on a demo board.
 
 The result is also insensitive to T0. T0 sits inside a logarithm, so even a 2x error in it moves the threshold by about 1 percent. The bound does not rest on precise silicon numbers.
 
