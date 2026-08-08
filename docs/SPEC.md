@@ -1,11 +1,13 @@
 ---
 tags: [chip-track, spec]
 project: P1
-version: "0.4"
+version: "0.5"
 status: frozen
 ---
 
-# MAC8 Interface Spec v0.4
+# MAC8 Interface Spec v0.5
+
+Changelog. 2026-08-08, v0.5 frozen, one driver contract correction, ruled on the submission readiness audit finding. The SEL read rule moves from 4 clocks to 5. The old derivation, 3 clocks for the sync path plus 1 for the registered output, computed the launch instant of the output register, not the earliest safe sample instant. In the slow resolution alignment those coincide at clock 4, so the old floor licensed sampling at the exact instant the fresh byte launches, proven stale on the functional gate netlist and on the annotated netlist at max_ss_100C_1v60 by the committed phase forced probe, test/probe_sel_boundary.py, the contract evidence. RTL and netlist are unchanged, this corrects the driver contract only. The new floor is pinned in CI by test_sel_read_floor.
 
 Changelog. 2026-08-08, wording only, no contract change, ruled in the submission readiness audit. The ringing guarantee is stated precisely as the lockout window rather than a blanket fires only once. The reset crossing counts are phase aware, 2 to 3 clocks, the synchronous reset's need for a running clock and the stopped clock behavior are stated, and the output validity condition is stated. Command decoder replaces command FSM, the block never had more state than the busy bit. The outbound vault links were dropped from this public copy.
 
@@ -80,7 +82,7 @@ Both pinning tests are pin only and run on the hardened gate level netlist, not 
 
 ## Read rule
 
-After a SEL command, sample uo_out no earlier than 4 clocks after the strobe rise. That is 3 clocks for the sync path plus 1 for the registered output.
+After a SEL command, sample uo_out no earlier than 5 clocks after the strobe rise. The sync path consumes the command up to 3 clocks after the rise, the registered output launches the fresh byte one clock later, at clock 4 in the slow alignment, and the extra clock covers the launch to pin propagation so an asynchronous reader never samples the transition itself. Corrected from 4 in v0.5, the old floor was the launch instant. Pinned by test_sel_read_floor at both forced synchronizer latencies.
 
 ## Reset state
 
@@ -107,4 +109,4 @@ CLR once. Per element, LDA x_i, then LDB w_i, then MAC. After the last element, 
 
 ## Approval
 
-Approved and frozen at v0.1 on 2026-07-13. v0.2 clarifications frozen 2026-07-13, no feature changes, wording only. v0.3 interface requirements frozen 2026-07-14. v0.4 corrections frozen 2026-07-15 on the round two ruling. Wording only reconciliation 2026-08-08 on the submission readiness audit ruling, no contract change. Changes from here are a version bump.
+Approved and frozen at v0.1 on 2026-07-13. v0.2 clarifications frozen 2026-07-13, no feature changes, wording only. v0.3 interface requirements frozen 2026-07-14. v0.4 corrections frozen 2026-07-15 on the round two ruling. Wording only reconciliation 2026-08-08 on the submission readiness audit ruling, no contract change. v0.5 frozen 2026-08-08 on the SEL read floor ruling, driver contract correction only, RTL and netlist unchanged. Changes from here are a version bump.

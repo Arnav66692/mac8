@@ -22,7 +22,7 @@ Reset first, with the clock running. The reset is synchronous, it acts only on r
 
 Drive one command per strobe rise. Set uio[2:0] and ui_in first, then raise the strobe. Hold it high at least 3 clocks and low at least 2 before the next rise. Hold the command and data stable the whole time the strobe is high and for 2 clocks after it falls. Commands arriving while busy is high are ignored, dropped not deferred, so respect the spacing rules and busy never bites.
 
-Dot product of length N. CLR once. Per element, LDA x_i, then LDB w_i, then MAC. After the last element, SEL_LO, SEL_MID, SEL_HI, reading uo_out after each. Sample uo_out no earlier than 4 clocks after the SEL strobe rise. Reconstruct the 24 bit result from the three bytes and check the overflow flag on uio[5].
+Dot product of length N. CLR once. Per element, LDA x_i, then LDB w_i, then MAC. After the last element, SEL_LO, SEL_MID, SEL_HI, reading uo_out after each. Sample uo_out no earlier than 5 clocks after the SEL strobe rise, the fresh byte can still be launching at clock 4 in the worst synchronizer alignment. Reconstruct the 24 bit result from the three bytes and check the overflow flag on uio[5].
 
 A quick smoke test. CLR, LDA 6, LDB 7, MAC, SEL_LO. uo_out reads 42.
 
