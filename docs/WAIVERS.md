@@ -1,7 +1,7 @@
 ---
 tags: [chip-track, signoff]
 project: P1
-status: one open waiver, W1, disposition deferred
+status: one waiver, W1, accepted for TTSKY26c, owner Nav, 2026-08-16
 ---
 
 # Signoff waivers
@@ -83,6 +83,10 @@ counts, 254 to 214, because the flow has no post route repair pass. The
 reset tree improves 0.899 to 0.892, same class. A full clear needs post
 route repair or a stronger fanout drive strategy.
 
-**Disposition. Deferred, Arnav's call.** Adopting the branch re baselines
-the one hash package for a partial improvement on a wart that gates
-nothing. The waiver stands on the slack numbers above either way.
+**Disposition. Accepted for TTSKY26c. Owner Nav, dated 2026-08-16,
+informed by the in person signoff review.** The engineering content above
+is unchanged, this line states the decision that was made. The fix is
+priced on the rsz-corners branch, run 29404662777, and stays a next tile
+item. Adopting it now would re baseline the one hash package for a
+partial improvement on a wart that gates nothing. The waiver stands on
+the slack numbers above either way.
