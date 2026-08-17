@@ -214,7 +214,7 @@ is still centuries.
 
 ## MTBF for the strobe synchronizer
 
-This analysis proves the physical metastability margin of the strobe synchronizer. It does not prove the RTL protocol. RTL simulation resolves deterministically and cannot exhibit metastability, so the 23 white-box tests and 9 gate-level tests prove protocol behavior and this analysis proves the physics.
+This analysis proves the physical metastability margin of the strobe synchronizer. It does not prove the RTL protocol. RTL simulation resolves deterministically and cannot exhibit metastability, so the 23 white-box tests and 14 gate-level tests prove protocol behavior and this analysis proves the physics.
 
 The standard estimate is:
 
