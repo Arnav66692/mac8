@@ -20,4 +20,4 @@ test/gate_level_netlist.v
 **/.DS_Store
 formal/build/
 test/sdf_*.sdf
-test/gl_sdf_*.log
+test/gl_sdf_*.log*
