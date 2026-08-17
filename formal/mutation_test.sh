@@ -4,7 +4,7 @@
 # that removes a real protection is CAUGHT, the proof fails, while a control
 # that removes the edge detect still fails, proving the harness stays live.
 #
-# base    must PASS
+# base    must PASS, BMC and then unbounded temporal induction
 # M1      delete the armed gate, accept_raw = ff2 & ~ff3.   must FAIL
 # M2      delete the lockout, accept = accept_raw.           must FAIL
 # M3      arm settle regressed by 4 clocks.                  must FAIL
@@ -95,10 +95,28 @@ run() {
   printf "%-8s expect %-4s got %-4s  %s\n" "$name" "$expect" "$got" "$mark"
 }
 
+run_induction() {
+  # Unbounded temporal induction on an expected passing case. BMC bounds
+  # the depth, induction closes the proof for every depth. Base must hold
+  # both, a mutant only needs its BMC counterexample.
+  local name="$1"
+  local out rc
+  out="$(yosys-smtbmc -s z3 -i -t "$DEPTH" "$B/$name.smt2" 2>&1)"
+  rc=$?
+  printf '%s\n' "$out" > "$B/$name.induction.log"
+  if printf '%s' "$out" | grep -q "Status: PASSED" && [ $rc -eq 0 ]; then
+    printf "%-8s induction PASS  ok, unbounded\n" "$name"
+  else
+    printf "%-8s induction WRONG, exit %d, see %s\n" "$name" "$rc" "$B/$name.induction.log"
+    GATE_OK=0
+  fi
+}
+
 GATE_OK=1
-echo "mutation gate, BMC depth $DEPTH"
+echo "mutation gate, BMC depth $DEPTH, induction on base"
 for m in base M1 M2 control M3; do gen "$m"; done
 run base    PASS
+run_induction base
 run M1      FAIL
 run M2      FAIL
 run M3      FAIL

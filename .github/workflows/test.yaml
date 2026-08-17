@@ -52,3 +52,55 @@ jobs:
             test/tb.fst
             test/results.xml
             test/output/*
+
+  # Third audit, CI completeness. The white box suites ran only locally
+  # before, a push could break them silently.
+  tb_test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Install iverilog
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Python packages
+        shell: bash
+        run: pip install -r test/requirements.txt
+
+      - name: Datapath white box suite
+        run: make -C tb TB=datapath
+
+      - name: Gate on datapath results
+        run: python3 scripts/check_results.py tb/results_datapath.xml --expect-from-tests tb/test_datapath.py
+
+      - name: Top white box suite
+        run: make -C tb TB=top
+
+      - name: Gate on top results
+        run: python3 scripts/check_results.py tb/results_top.xml --expect-from-tests tb/test_top.py
+
+  # Third audit, CI completeness. The formal mutation gate with unbounded
+  # induction on base, formal/mutation_test.sh owns pass or fail.
+  formal:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Setup OSS CAD Suite
+        uses: YosysHQ/setup-oss-cad-suite@v4
+        with:
+          version: '2026-08-17'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Mutation gate with induction
+        run: bash formal/mutation_test.sh 60

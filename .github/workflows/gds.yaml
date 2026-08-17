@@ -37,6 +37,54 @@ jobs:
       - name: GL test
         uses: TinyTapeout/tt-gds-action/gl_test@ttsky26c
 
+  # Third audit, CI completeness. The annotated timing suite consumes the
+  # netlist and SDF produced by this same workflow run, so every push
+  # proves its own gate level timing behavior, not a stale artifact's.
+  # scripts/run_gl_sdf.sh owns pass or fail, blessed manifest included.
+  sdf_test:
+    needs: gds
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Install iverilog
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+
+      - name: Setup python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install Python packages and volare
+        shell: bash
+        run: pip install -r test/requirements.txt volare
+
+      - name: Install sky130A
+        shell: bash
+        run: volare enable --pdk sky130 8afc8346a57fe1ab7934ba5a6056ea8b43078e71
+
+      - name: Download this run's GDS logs
+        uses: actions/download-artifact@v7
+        with:
+          name: GDS_logs
+          path: gds_logs
+
+      - name: Stage the run's netlist and SDF
+        shell: bash
+        run: |
+          cp gds_logs/runs/wokwi/final/pnl/tt_um_arnav_mac8.pnl.v test/gate_level_netlist.v
+          cp gds_logs/runs/wokwi/final/sdf/max_ss_100C_1v60/tt_um_arnav_mac8__max_ss_100C_1v60.sdf test/sdf_max_ss.sdf
+
+      - name: Annotated gate level suite at max_ss
+        shell: bash
+        run: |
+          export PDK_ROOT=$HOME/.volare
+          ./scripts/run_gl_sdf.sh positive
+
   # Restored verbatim from the template in the submission readiness audit.
   # It was disabled while the repo was private, Pages was unavailable there,
   # and the repo has been public since the cleanup.
