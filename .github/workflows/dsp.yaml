@@ -1,0 +1,52 @@
+name: dsp-verification
+on: [push, workflow_dispatch]
+jobs:
+  application:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - name: Install simulator and Python packages
+        run: |
+          sudo apt-get update && sudo apt-get install -y iverilog
+          pip install -r test/requirements.txt
+      - name: Portable reference and ownership tests
+        run: python -m unittest app.test_reference
+      - name: Exhaustive signed multiplication
+        run: |
+          make -C verification -f arithmetic.mk
+          python scripts/check_results.py verification/results_arithmetic.xml --expect-from-tests verification/test_arithmetic.py
+      - name: Baseline and fused application regression
+        run: |
+          make -C verification VARIANT=baseline
+          python scripts/check_results.py verification/results_baseline.xml --expect-from-tests verification/test_app.py
+          make -C verification VARIANT=fused
+          python scripts/check_results.py verification/results_fused.xml --expect-from-tests verification/test_app.py
+      - name: Mutation gate
+        run: python scripts/check_app_mutations.py
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: dsp-verification
+          path: |
+            reports/dsp-demo/*.json
+            reports/dsp-demo/mutations/
+            verification/results_*.xml
+  fused-control:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: YosysHQ/setup-oss-cad-suite@v4
+        with:
+          version: '2026-08-17'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: python3 scripts/check_fused_control.py
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: fused-control-proof
+          path: |
+            reports/dsp-demo/formal/*.log
+            reports/dsp-demo/formal/results.json

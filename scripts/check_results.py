@@ -50,7 +50,7 @@ def main() -> None:
     for case in cases:
         total += 1
         for child in case:
-            if child.tag in ("failure", "error"):
+            if child.tag in ("failure", "error", "skipped"):
                 bad.append(f"{case.get('classname')}.{case.get('name')}: {child.tag}")
 
     if total != expected:

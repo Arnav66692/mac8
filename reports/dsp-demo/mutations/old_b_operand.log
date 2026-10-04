@@ -1,0 +1,35 @@
+rm -f results_fused.xml
+"/Library/Developer/CommandLineTools/usr/bin/make" -f Makefile results_fused.xml
+mkdir -p sim_build_fused
+/opt/homebrew/bin/iverilog -o sim_build_fused/sim.vvp -s tb_app -g2012 -DFUSED -f sim_build_fused/cmds.f  ../src/mac8_datapath.sv ../src/mac8_sync.sv ../src/mac8_rst_sync.sv ../src/mac8_ctrl.sv ../experiments/fused/tt_um_arnav_mac8_fused.sv tb_app.sv
+rm -f results_fused.xml
+COCOTB_TEST_MODULES=test_app COCOTB_TESTCASE= COCOTB_TEST_FILTER=test_signed_vectors_and_new_b COCOTB_TOPLEVEL=tb_app TOPLEVEL_LANG=verilog \
+         /opt/homebrew/bin/vvp -M /Users/arnavsingh/.venvs/mac8/lib/python3.12/site-packages/cocotb/libs -m libcocotbvpi_icarus   sim_build_fused/sim.vvp   
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:94   in _embed_init_python              Using Python 3.12.10 interpreter at /Users/arnavsingh/.venvs/mac8/bin/python3.12
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:79   in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 13.0 (stable)
+     0.00ns INFO     cocotb                             Seeding Python random module with 1791155128
+     0.00ns INFO     cocotb                             Initialized cocotb v2.0.1 from /Users/arnavsingh/.venvs/mac8/lib/python3.12/site-packages/cocotb
+     0.00ns INFO     cocotb                             Running tests
+     0.00ns INFO     cocotb.regression                  running test_app.test_signed_vectors_and_new_b (1/1)
+  2240.00ns WARNING  .._b.test_signed_vectors_and_new_b assert (0, False) == (128, False)
+                                                         +  where (128, False) = dot_reference([-128, 127, -1, 0, 1], [-128, -128, 127, -1, 127])
+                                                        Traceback (most recent call last):
+                                                          File "/private/var/folders/97/2s6bz2xs7d55dymhpxkdj4zc0000gn/T/mac8-mutation-06dub2iu/verification/test_app.py", line 74, in test_signed_vectors_and_new_b
+                                                            assert await driver.dot_product(xs, ws) == dot_reference(xs, ws)
+                                                        AssertionError: assert (0, False) == (128, False)
+                                                         +  where (128, False) = dot_reference([-128, 127, -1, 0, 1], [-128, -128, 127, -1, 127])
+  2240.00ns WARNING  cocotb.regression                  test_app.test_signed_vectors_and_new_b failed
+  2240.00ns INFO     cocotb.regression                  ************************************************************************************************
+                                                        ** TEST                                    STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        ************************************************************************************************
+                                                        ** test_app.test_signed_vectors_and_new_b   FAIL        2240.00           0.01     210702.87  **
+                                                        ************************************************************************************************
+                                                        ** TESTS=1 PASS=0 FAIL=1 SKIP=0                         2240.00           0.02     102511.06  **
+                                                        ************************************************************************************************
+../src/mac8_datapath.sv:52: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in '+sum_ext[24:0]').
+../src/mac8_datapath.sv:62: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in '+acc_q[23:0]').
+../src/mac8_datapath.sv:63: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in '+acc_q[23:0]').
+../src/mac8_datapath.sv:64: sorry: constant selects in always_* processes are not fully supported (the process will be sensitive to all bits in '+acc_q[23:0]').
+make[1]: *** [results_fused.xml] Error 1
+make: *** [sim] Error 2

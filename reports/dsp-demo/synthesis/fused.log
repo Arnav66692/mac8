@@ -1,0 +1,1110 @@
+
+-- Executing script file `/Users/arnavsingh/Desktop/Chip Design Track Vault/code/mac8/reports/dsp-demo/synthesis/fused.ys' --
+
+1. Executing Liberty frontend: /Users/arnavsingh/.volare/volare/sky130/versions/c6d73a35f524070e85faff4a6a9eef49553ebc2b/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
+Imported 428 cell types from liberty file.
+
+2. Executing Verilog-2005 frontend: src/mac8_datapath.sv
+Parsing SystemVerilog input from `src/mac8_datapath.sv' to AST representation.
+Generating RTLIL representation for module `\mac8_datapath'.
+Successfully finished Verilog frontend.
+
+3. Executing Verilog-2005 frontend: src/mac8_sync.sv
+Parsing SystemVerilog input from `src/mac8_sync.sv' to AST representation.
+Generating RTLIL representation for module `\mac8_sync'.
+Successfully finished Verilog frontend.
+
+4. Executing Verilog-2005 frontend: src/mac8_rst_sync.sv
+Parsing SystemVerilog input from `src/mac8_rst_sync.sv' to AST representation.
+Generating RTLIL representation for module `\mac8_rst_sync'.
+Successfully finished Verilog frontend.
+
+5. Executing Verilog-2005 frontend: src/mac8_ctrl.sv
+Parsing SystemVerilog input from `src/mac8_ctrl.sv' to AST representation.
+Generating RTLIL representation for module `\mac8_ctrl'.
+Successfully finished Verilog frontend.
+
+6. Executing Verilog-2005 frontend: experiments/fused/tt_um_arnav_mac8_fused.sv
+Parsing SystemVerilog input from `experiments/fused/tt_um_arnav_mac8_fused.sv' to AST representation.
+Generating RTLIL representation for module `\tt_um_arnav_mac8_fused'.
+Successfully finished Verilog frontend.
+
+7. Executing SYNTH pass.
+
+7.1. Executing HIERARCHY pass (managing design hierarchy).
+
+7.1.1. Analyzing design hierarchy..
+Top module:  \tt_um_arnav_mac8_fused
+Used module:     \mac8_datapath
+Used module:     \mac8_ctrl
+Used module:     \mac8_sync
+Used module:     \mac8_rst_sync
+
+7.1.2. Analyzing design hierarchy..
+Top module:  \tt_um_arnav_mac8_fused
+Used module:     \mac8_datapath
+Used module:     \mac8_ctrl
+Used module:     \mac8_sync
+Used module:     \mac8_rst_sync
+Removed 0 unused modules.
+
+7.2. Executing PROC pass (convert processes to netlists).
+
+7.2.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+7.2.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Marked 1 switch rules as full_case in process $proc$experiments/fused/tt_um_arnav_mac8_fused.sv:19$51 in module tt_um_arnav_mac8_fused.
+Marked 1 switch rules as full_case in process $proc$src/mac8_ctrl.sv:52$40 in module mac8_ctrl.
+Marked 1 switch rules as full_case in process $proc$src/mac8_ctrl.sv:37$23 in module mac8_ctrl.
+Marked 3 switch rules as full_case in process $proc$src/mac8_sync.sv:79$10 in module mac8_sync.
+Marked 2 switch rules as full_case in process $proc$src/mac8_datapath.sv:88$7 in module mac8_datapath.
+Marked 1 switch rules as full_case in process $proc$src/mac8_datapath.sv:60$6 in module mac8_datapath.
+Marked 2 switch rules as full_case in process $proc$src/mac8_datapath.sv:42$1 in module mac8_datapath.
+Removed a total of 0 dead cases.
+
+7.2.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
+Removed 8 redundant assignments.
+Promoted 16 assignments to connections.
+
+7.2.4. Executing PROC_INIT pass (extract init attributes).
+
+7.2.5. Executing PROC_ARST pass (detect async resets in processes).
+
+7.2.6. Executing PROC_ROM pass (convert switches to ROMs).
+Converted 0 switches.
+<suppressed ~17 debug messages>
+
+7.2.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\tt_um_arnav_mac8_fused.$proc$experiments/fused/tt_um_arnav_mac8_fused.sv:19$51'.
+     1/2: $0\fused_busy[0:0]
+     2/2: $0\pending[0:0]
+Creating decoders for process `\mac8_ctrl.$proc$src/mac8_ctrl.sv:52$40'.
+     1/1: $0\busy[0:0]
+Creating decoders for process `\mac8_ctrl.$proc$src/mac8_ctrl.sv:37$23'.
+     1/1: $1\sel_in[1:0]
+Creating decoders for process `\mac8_rst_sync.$proc$src/mac8_rst_sync.sv:40$22'.
+Creating decoders for process `\mac8_sync.$proc$src/mac8_sync.sv:118$16'.
+Creating decoders for process `\mac8_sync.$proc$src/mac8_sync.sv:79$10'.
+     1/7: $0\seen_reset[1:0]
+     2/7: $0\ff3[0:0]
+     3/7: $0\ff2[0:0]
+     4/7: $0\ff1[0:0]
+     5/7: $0\locked[0:0]
+     6/7: $0\lock_cnt[1:0]
+     7/7: $0\armed[0:0]
+Creating decoders for process `\mac8_datapath.$proc$src/mac8_datapath.sv:88$7'.
+     1/6: $0\out_byte[7:0]
+     2/6: $0\out_sel_q[1:0]
+     3/6: $0\acc_q[23:0]
+     4/6: $0\b_q[7:0]
+     5/6: $0\a_q[7:0]
+     6/6: $0\ovf[0:0]
+Creating decoders for process `\mac8_datapath.$proc$src/mac8_datapath.sv:60$6'.
+     1/1: $1\acc_byte[7:0]
+Creating decoders for process `\mac8_datapath.$proc$src/mac8_datapath.sv:42$1'.
+     1/4: $2\sat_hit[0:0]
+     2/4: $2\acc_next[23:0]
+     3/4: $1\sat_hit[0:0]
+     4/4: $1\acc_next[23:0]
+
+7.2.8. Executing PROC_DLATCH pass (convert process syncs to latches).
+No latch inferred for signal `\mac8_ctrl.\ld_a' from process `\mac8_ctrl.$proc$src/mac8_ctrl.sv:37$23'.
+No latch inferred for signal `\mac8_ctrl.\ld_b' from process `\mac8_ctrl.$proc$src/mac8_ctrl.sv:37$23'.
+No latch inferred for signal `\mac8_ctrl.\do_mac' from process `\mac8_ctrl.$proc$src/mac8_ctrl.sv:37$23'.
+No latch inferred for signal `\mac8_ctrl.\do_clr' from process `\mac8_ctrl.$proc$src/mac8_ctrl.sv:37$23'.
+No latch inferred for signal `\mac8_ctrl.\ld_sel' from process `\mac8_ctrl.$proc$src/mac8_ctrl.sv:37$23'.
+No latch inferred for signal `\mac8_ctrl.\sel_in' from process `\mac8_ctrl.$proc$src/mac8_ctrl.sv:37$23'.
+No latch inferred for signal `\mac8_ctrl.\fire' from process `\mac8_ctrl.$proc$src/mac8_ctrl.sv:37$23'.
+No latch inferred for signal `\mac8_sync.\accept' from process `\mac8_sync.$proc$src/mac8_sync.sv:118$16'.
+No latch inferred for signal `\mac8_sync.\accept_raw' from process `\mac8_sync.$proc$src/mac8_sync.sv:118$16'.
+No latch inferred for signal `\mac8_datapath.\acc_byte' from process `\mac8_datapath.$proc$src/mac8_datapath.sv:60$6'.
+No latch inferred for signal `\mac8_datapath.\product' from process `\mac8_datapath.$proc$src/mac8_datapath.sv:42$1'.
+No latch inferred for signal `\mac8_datapath.\sum_ext' from process `\mac8_datapath.$proc$src/mac8_datapath.sv:42$1'.
+No latch inferred for signal `\mac8_datapath.\acc_next' from process `\mac8_datapath.$proc$src/mac8_datapath.sv:42$1'.
+No latch inferred for signal `\mac8_datapath.\sat_hit' from process `\mac8_datapath.$proc$src/mac8_datapath.sv:42$1'.
+
+7.2.9. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\tt_um_arnav_mac8_fused.\pending' using process `\tt_um_arnav_mac8_fused.$proc$experiments/fused/tt_um_arnav_mac8_fused.sv:19$51'.
+  created $dff cell `$procdff$165' with positive edge clock.
+Creating register for signal `\tt_um_arnav_mac8_fused.\fused_busy' using process `\tt_um_arnav_mac8_fused.$proc$experiments/fused/tt_um_arnav_mac8_fused.sv:19$51'.
+  created $dff cell `$procdff$166' with positive edge clock.
+Creating register for signal `\mac8_ctrl.\busy' using process `\mac8_ctrl.$proc$src/mac8_ctrl.sv:52$40'.
+  created $dff cell `$procdff$167' with positive edge clock.
+Creating register for signal `\mac8_rst_sync.\rst_ff1' using process `\mac8_rst_sync.$proc$src/mac8_rst_sync.sv:40$22'.
+  created $dff cell `$procdff$168' with positive edge clock.
+Creating register for signal `\mac8_rst_sync.\rst_ff2' using process `\mac8_rst_sync.$proc$src/mac8_rst_sync.sv:40$22'.
+  created $dff cell `$procdff$169' with positive edge clock.
+Creating register for signal `\mac8_sync.\ff1' using process `\mac8_sync.$proc$src/mac8_sync.sv:79$10'.
+  created $dff cell `$procdff$170' with positive edge clock.
+Creating register for signal `\mac8_sync.\ff2' using process `\mac8_sync.$proc$src/mac8_sync.sv:79$10'.
+  created $dff cell `$procdff$171' with positive edge clock.
+Creating register for signal `\mac8_sync.\ff3' using process `\mac8_sync.$proc$src/mac8_sync.sv:79$10'.
+  created $dff cell `$procdff$172' with positive edge clock.
+Creating register for signal `\mac8_sync.\seen_reset' using process `\mac8_sync.$proc$src/mac8_sync.sv:79$10'.
+  created $dff cell `$procdff$173' with positive edge clock.
+Creating register for signal `\mac8_sync.\armed' using process `\mac8_sync.$proc$src/mac8_sync.sv:79$10'.
+  created $dff cell `$procdff$174' with positive edge clock.
+Creating register for signal `\mac8_sync.\lock_cnt' using process `\mac8_sync.$proc$src/mac8_sync.sv:79$10'.
+  created $dff cell `$procdff$175' with positive edge clock.
+Creating register for signal `\mac8_sync.\locked' using process `\mac8_sync.$proc$src/mac8_sync.sv:79$10'.
+  created $dff cell `$procdff$176' with positive edge clock.
+Creating register for signal `\mac8_datapath.\out_byte' using process `\mac8_datapath.$proc$src/mac8_datapath.sv:88$7'.
+  created $dff cell `$procdff$177' with positive edge clock.
+Creating register for signal `\mac8_datapath.\ovf' using process `\mac8_datapath.$proc$src/mac8_datapath.sv:88$7'.
+  created $dff cell `$procdff$178' with positive edge clock.
+Creating register for signal `\mac8_datapath.\a_q' using process `\mac8_datapath.$proc$src/mac8_datapath.sv:88$7'.
+  created $dff cell `$procdff$179' with positive edge clock.
+Creating register for signal `\mac8_datapath.\b_q' using process `\mac8_datapath.$proc$src/mac8_datapath.sv:88$7'.
+  created $dff cell `$procdff$180' with positive edge clock.
+Creating register for signal `\mac8_datapath.\acc_q' using process `\mac8_datapath.$proc$src/mac8_datapath.sv:88$7'.
+  created $dff cell `$procdff$181' with positive edge clock.
+Creating register for signal `\mac8_datapath.\out_sel_q' using process `\mac8_datapath.$proc$src/mac8_datapath.sv:88$7'.
+  created $dff cell `$procdff$182' with positive edge clock.
+
+7.2.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
+
+7.2.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Found and cleaned up 1 empty switch in `\tt_um_arnav_mac8_fused.$proc$experiments/fused/tt_um_arnav_mac8_fused.sv:19$51'.
+Removing empty process `tt_um_arnav_mac8_fused.$proc$experiments/fused/tt_um_arnav_mac8_fused.sv:19$51'.
+Found and cleaned up 1 empty switch in `\mac8_ctrl.$proc$src/mac8_ctrl.sv:52$40'.
+Removing empty process `mac8_ctrl.$proc$src/mac8_ctrl.sv:52$40'.
+Found and cleaned up 1 empty switch in `\mac8_ctrl.$proc$src/mac8_ctrl.sv:37$23'.
+Removing empty process `mac8_ctrl.$proc$src/mac8_ctrl.sv:37$23'.
+Removing empty process `mac8_rst_sync.$proc$src/mac8_rst_sync.sv:40$22'.
+Removing empty process `mac8_sync.$proc$src/mac8_sync.sv:118$16'.
+Found and cleaned up 5 empty switches in `\mac8_sync.$proc$src/mac8_sync.sv:79$10'.
+Removing empty process `mac8_sync.$proc$src/mac8_sync.sv:79$10'.
+Found and cleaned up 6 empty switches in `\mac8_datapath.$proc$src/mac8_datapath.sv:88$7'.
+Removing empty process `mac8_datapath.$proc$src/mac8_datapath.sv:88$7'.
+Found and cleaned up 1 empty switch in `\mac8_datapath.$proc$src/mac8_datapath.sv:60$6'.
+Removing empty process `mac8_datapath.$proc$src/mac8_datapath.sv:60$6'.
+Found and cleaned up 2 empty switches in `\mac8_datapath.$proc$src/mac8_datapath.sv:42$1'.
+Removing empty process `mac8_datapath.$proc$src/mac8_datapath.sv:42$1'.
+Cleaned up 17 empty switches.
+
+7.2.12. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+<suppressed ~4 debug messages>
+Optimizing module mac8_ctrl.
+<suppressed ~1 debug messages>
+Optimizing module mac8_rst_sync.
+Optimizing module mac8_sync.
+<suppressed ~7 debug messages>
+Optimizing module mac8_datapath.
+<suppressed ~6 debug messages>
+
+7.3. Executing CHECK pass (checking for obvious problems).
+Checking module tt_um_arnav_mac8_fused...
+Checking module mac8_ctrl...
+Checking module mac8_rst_sync...
+Checking module mac8_sync...
+Checking module mac8_datapath...
+Found and reported 0 problems.
+
+7.4. Executing FLATTEN pass (flatten design).
+Deleting now unused module mac8_ctrl.
+Deleting now unused module mac8_rst_sync.
+Deleting now unused module mac8_sync.
+Deleting now unused module mac8_datapath.
+<suppressed ~4 debug messages>
+
+7.5. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+
+7.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+Removed 4 unused cells and 98 unused wires.
+<suppressed ~5 debug messages>
+
+7.7. Executing CHECK pass (checking for obvious problems).
+Checking module tt_um_arnav_mac8_fused...
+Found and reported 0 problems.
+
+7.8. Executing OPT pass (performing simple optimizations).
+
+7.8.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+
+7.8.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 106 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 104 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+<suppressed ~6 debug messages>
+Removed a total of 2 cells.
+
+7.8.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tt_um_arnav_mac8_fused..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+      Replacing known input bits on port A of cell $flatten\u_sync.$procmux$85: \u_sync.locked -> 1'0
+      Replacing known input bits on port A of cell $flatten\u_sync.$procmux$83: \u_sync.locked -> 1'1
+  Analyzing evaluation results.
+    dead port 1/2 on $mux $flatten\u_dp.$procmux$151.
+    dead port 1/2 on $mux $flatten\u_dp.$procmux$157.
+Removed 2 multiplexer ports.
+<suppressed ~55 debug messages>
+
+7.8.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tt_um_arnav_mac8_fused.
+Performed a total of 0 changes.
+
+7.8.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 102 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Removed a total of 0 cells.
+
+7.8.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+7.8.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+Removed 0 unused cells and 4 unused wires.
+<suppressed ~1 debug messages>
+
+7.8.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+
+7.8.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+7.8.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tt_um_arnav_mac8_fused..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~53 debug messages>
+
+7.8.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tt_um_arnav_mac8_fused.
+Performed a total of 0 changes.
+
+7.8.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 102 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Removed a total of 0 cells.
+
+7.8.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+7.8.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+
+7.8.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+
+7.8.16. Finished fast OPT passes. (There is nothing left to do.)
+
+7.9. Executing FSM pass (extract and optimize FSM).
+
+7.9.1. Executing FSM_DETECT pass (finding FSMs in design).
+Found FSM state register tt_um_arnav_mac8_fused.u_dp.out_sel_q.
+
+7.9.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+Extracting FSM `\u_dp.out_sel_q' from module `\tt_um_arnav_mac8_fused'.
+  found $dff cell for state register: $flatten\u_dp.$procdff$182
+  root of input selection tree: $flatten\u_dp.$0\out_sel_q[1:0]
+  found reset state: 2'00 (guessed from mux tree)
+  found ctrl input: \u_rst_sync.rst_ff2
+  found state code: 2'00
+  found ctrl input: \ld_sel
+  found ctrl input: $flatten\u_ctrl.$eq$src/mac8_ctrl.sv:43$37_Y
+  found ctrl input: $flatten\u_ctrl.$eq$src/mac8_ctrl.sv:43$35_Y
+  found state code: 2'10
+  found state code: 2'01
+  found ctrl output: $flatten\u_dp.$procmux$146_CMP
+  found ctrl output: $flatten\u_dp.$procmux$145_CMP
+  ctrl inputs: { $flatten\u_ctrl.$eq$src/mac8_ctrl.sv:43$35_Y $flatten\u_ctrl.$eq$src/mac8_ctrl.sv:43$37_Y \u_rst_sync.rst_ff2 \ld_sel }
+  ctrl outputs: { $flatten\u_dp.$0\out_sel_q[1:0] $flatten\u_dp.$procmux$145_CMP $flatten\u_dp.$procmux$146_CMP }
+  transition:       2'00 4'--0- ->       2'00 4'0000
+  transition:       2'00 4'--10 ->       2'00 4'0000
+  transition:       2'00 4'0011 ->       2'00 4'0000
+  transition:       2'00 4'1-11 ->       2'01 4'0100
+  transition:       2'00 4'-111 ->       2'10 4'1000
+  transition:       2'10 4'--0- ->       2'00 4'0010
+  transition:       2'10 4'--10 ->       2'10 4'1010
+  transition:       2'10 4'0011 ->       2'00 4'0010
+  transition:       2'10 4'1-11 ->       2'01 4'0110
+  transition:       2'10 4'-111 ->       2'10 4'1010
+  transition:       2'01 4'--0- ->       2'00 4'0001
+  transition:       2'01 4'--10 ->       2'01 4'0101
+  transition:       2'01 4'0011 ->       2'00 4'0001
+  transition:       2'01 4'1-11 ->       2'01 4'0101
+  transition:       2'01 4'-111 ->       2'10 4'1001
+
+7.9.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+Optimizing FSM `$fsm$\u_dp.out_sel_q$187' from module `\tt_um_arnav_mac8_fused'.
+
+7.9.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+Removed 6 unused cells and 8 unused wires.
+<suppressed ~10 debug messages>
+
+7.9.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+Optimizing FSM `$fsm$\u_dp.out_sel_q$187' from module `\tt_um_arnav_mac8_fused'.
+  Removing unused output signal $flatten\u_dp.$0\out_sel_q[1:0] [0].
+  Removing unused output signal $flatten\u_dp.$0\out_sel_q[1:0] [1].
+
+7.9.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+Recoding FSM `$fsm$\u_dp.out_sel_q$187' from module `\tt_um_arnav_mac8_fused' using `auto' encoding:
+  mapping auto encoding to `one-hot` for this FSM.
+  00 -> --1
+  10 -> -1-
+  01 -> 1--
+
+7.9.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+
+FSM `$fsm$\u_dp.out_sel_q$187' from module `tt_um_arnav_mac8_fused':
+-------------------------------------
+
+  Information on FSM $fsm$\u_dp.out_sel_q$187 (\u_dp.out_sel_q):
+
+  Number of input signals:    4
+  Number of output signals:   2
+  Number of state bits:       3
+
+  Input signals:
+    0: \ld_sel
+    1: \u_rst_sync.rst_ff2
+    2: $flatten\u_ctrl.$eq$src/mac8_ctrl.sv:43$37_Y
+    3: $flatten\u_ctrl.$eq$src/mac8_ctrl.sv:43$35_Y
+
+  Output signals:
+    0: $flatten\u_dp.$procmux$146_CMP
+    1: $flatten\u_dp.$procmux$145_CMP
+
+  State encoding:
+    0:      3'--1  <RESET STATE>
+    1:      3'-1-
+    2:      3'1--
+
+  Transition Table (state_in, ctrl_in, state_out, ctrl_out):
+      0:     0 4'--10   ->     0 2'00
+      1:     0 4'0011   ->     0 2'00
+      2:     0 4'--0-   ->     0 2'00
+      3:     0 4'-111   ->     1 2'00
+      4:     0 4'1-11   ->     2 2'00
+      5:     1 4'0011   ->     0 2'10
+      6:     1 4'--0-   ->     0 2'10
+      7:     1 4'--10   ->     1 2'10
+      8:     1 4'-111   ->     1 2'10
+      9:     1 4'1-11   ->     2 2'10
+     10:     2 4'0011   ->     0 2'01
+     11:     2 4'--0-   ->     0 2'01
+     12:     2 4'-111   ->     1 2'01
+     13:     2 4'--10   ->     2 2'01
+     14:     2 4'1-11   ->     2 2'01
+
+-------------------------------------
+
+7.9.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+Mapping FSM `$fsm$\u_dp.out_sel_q$187' from module `\tt_um_arnav_mac8_fused'.
+
+7.10. Executing OPT pass (performing simple optimizations).
+
+7.10.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+<suppressed ~1 debug messages>
+
+7.10.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 110 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 108 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+<suppressed ~6 debug messages>
+Removed a total of 2 cells.
+
+7.10.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tt_um_arnav_mac8_fused..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~49 debug messages>
+
+7.10.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tt_um_arnav_mac8_fused.
+Performed a total of 0 changes.
+
+7.10.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 108 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Removed a total of 0 cells.
+
+7.10.6. Executing OPT_DFF pass (perform DFF optimizations).
+Adding SRST signal on $procdff$166 ($dff) from module tt_um_arnav_mac8_fused (D = \pending, Q = \fused_busy, rval = 1'0).
+Adding SRST signal on $procdff$165 ($dff) from module tt_um_arnav_mac8_fused (D = \fused_fire, Q = \pending, rval = 1'0).
+Adding SRST signal on $flatten\u_sync.$procdff$176 ($dff) from module tt_um_arnav_mac8_fused (D = $flatten\u_sync.$procmux$88_Y, Q = \u_sync.locked, rval = 1'0).
+Adding SRST signal on $flatten\u_sync.$procdff$175 ($dff) from module tt_um_arnav_mac8_fused (D = $flatten\u_sync.$procmux$96_Y, Q = \u_sync.lock_cnt, rval = 2'00).
+Adding EN signal on $auto$ff.cc:337:slice$221 ($sdff) from module tt_um_arnav_mac8_fused (D = $flatten\u_sync.$add$src/mac8_sync.sv:109$15_Y, Q = \u_sync.lock_cnt).
+Adding SRST signal on $flatten\u_sync.$procdff$174 ($dff) from module tt_um_arnav_mac8_fused (D = $flatten\u_sync.$procmux$104_Y, Q = \u_sync.armed, rval = 1'0).
+Adding EN signal on $auto$ff.cc:337:slice$231 ($sdff) from module tt_um_arnav_mac8_fused (D = 1'1, Q = \u_sync.armed).
+Adding SRST signal on $flatten\u_sync.$procdff$173 ($dff) from module tt_um_arnav_mac8_fused (D = \u_sync.seen_reset [0], Q = \u_sync.seen_reset [1], rval = 1'0).
+Adding SRST signal on $flatten\u_sync.$procdff$172 ($dff) from module tt_um_arnav_mac8_fused (D = \u_sync.ff2, Q = \u_sync.ff3, rval = 1'0).
+Adding SRST signal on $flatten\u_sync.$procdff$171 ($dff) from module tt_um_arnav_mac8_fused (D = \u_sync.ff1, Q = \u_sync.ff2, rval = 1'0).
+Adding SRST signal on $flatten\u_sync.$procdff$170 ($dff) from module tt_um_arnav_mac8_fused (D = \uio_in [3], Q = \u_sync.ff1, rval = 1'0).
+Adding SRST signal on $flatten\u_ctrl.$procdff$167 ($dff) from module tt_um_arnav_mac8_fused (D = \do_mac_base, Q = \u_ctrl.busy, rval = 1'0).
+Adding SRST signal on $flatten\u_dp.$procdff$181 ($dff) from module tt_um_arnav_mac8_fused (D = $flatten\u_dp.$procmux$117_Y, Q = \u_dp.acc_q, rval = 24'000000000000000000000000).
+Adding EN signal on $auto$ff.cc:337:slice$239 ($sdff) from module tt_um_arnav_mac8_fused (D = \u_dp.acc_next, Q = \u_dp.acc_q).
+Adding SRST signal on $flatten\u_dp.$procdff$180 ($dff) from module tt_um_arnav_mac8_fused (D = $flatten\u_dp.$procmux$125_Y, Q = \u_dp.b_q, rval = 8'00000000).
+Adding EN signal on $auto$ff.cc:337:slice$245 ($sdff) from module tt_um_arnav_mac8_fused (D = \ui_in, Q = \u_dp.b_q).
+Adding SRST signal on $flatten\u_dp.$procdff$179 ($dff) from module tt_um_arnav_mac8_fused (D = $flatten\u_dp.$procmux$130_Y, Q = \u_dp.a_q, rval = 8'00000000).
+Adding EN signal on $auto$ff.cc:337:slice$247 ($sdff) from module tt_um_arnav_mac8_fused (D = \ui_in, Q = \u_dp.a_q).
+Adding SRST signal on $flatten\u_dp.$procdff$178 ($dff) from module tt_um_arnav_mac8_fused (D = $flatten\u_dp.$procmux$135_Y, Q = \u_dp.ovf, rval = 1'0).
+Adding EN signal on $auto$ff.cc:337:slice$249 ($sdff) from module tt_um_arnav_mac8_fused (D = $flatten\u_dp.$or$src/mac8_datapath.sv:111$9_Y, Q = \u_dp.ovf).
+Adding SRST signal on $flatten\u_dp.$procdff$177 ($dff) from module tt_um_arnav_mac8_fused (D = \u_dp.acc_byte, Q = \u_dp.out_byte, rval = 8'00000000).
+
+7.10.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+Removed 24 unused cells and 31 unused wires.
+<suppressed ~25 debug messages>
+
+7.10.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+
+7.10.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+7.10.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tt_um_arnav_mac8_fused..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~14 debug messages>
+
+7.10.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tt_um_arnav_mac8_fused.
+Performed a total of 0 changes.
+
+7.10.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 93 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 90 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 89 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+<suppressed ~12 debug messages>
+Removed a total of 4 cells.
+
+7.10.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+7.10.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+Removed 0 unused cells and 4 unused wires.
+<suppressed ~1 debug messages>
+
+7.10.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+
+7.10.16. Rerunning OPT passes. (Maybe there is more to do..)
+
+7.10.17. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tt_um_arnav_mac8_fused..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~14 debug messages>
+
+7.10.18. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tt_um_arnav_mac8_fused.
+Performed a total of 0 changes.
+
+7.10.19. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 89 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Removed a total of 0 cells.
+
+7.10.20. Executing OPT_DFF pass (perform DFF optimizations).
+
+7.10.21. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+
+7.10.22. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+
+7.10.23. Finished fast OPT passes. (There is nothing left to do.)
+
+7.11. Executing WREDUCE pass (reducing word size of cells).
+Removed top 2 bits (of 4) from port B of cell tt_um_arnav_mac8_fused.$auto$fsm_map.cc:77:implement_pattern_cache$200 ($eq).
+Removed top 1 bits (of 2) from mux cell tt_um_arnav_mac8_fused.$flatten\u_sync.$procmux$71 ($mux).
+Removed top 1 bits (of 2) from port B of cell tt_um_arnav_mac8_fused.$flatten\u_sync.$add$src/mac8_sync.sv:109$15 ($add).
+Removed top 1 bits (of 3) from port B of cell tt_um_arnav_mac8_fused.$flatten\u_ctrl.$eq$src/mac8_ctrl.sv:41$30 ($eq).
+Removed top 1 bits (of 3) from port B of cell tt_um_arnav_mac8_fused.$flatten\u_ctrl.$eq$src/mac8_ctrl.sv:40$28 ($eq).
+Removed top 2 bits (of 3) from port B of cell tt_um_arnav_mac8_fused.$flatten\u_ctrl.$eq$src/mac8_ctrl.sv:39$26 ($eq).
+Removed top 1 bits (of 25) from port B of cell tt_um_arnav_mac8_fused.$flatten\u_dp.$lt$src/mac8_datapath.sv:48$5 ($lt).
+Removed top 1 bits (of 25) from port B of cell tt_um_arnav_mac8_fused.$flatten\u_dp.$gt$src/mac8_datapath.sv:45$4 ($gt).
+Converting cell tt_um_arnav_mac8_fused.$flatten\u_dp.$add$src/mac8_datapath.sv:44$3 ($add) from unsigned to signed.
+Removed top 1 bits (of 25) from port A of cell tt_um_arnav_mac8_fused.$flatten\u_dp.$add$src/mac8_datapath.sv:44$3 ($add).
+Removed top 9 bits (of 25) from port B of cell tt_um_arnav_mac8_fused.$flatten\u_dp.$add$src/mac8_datapath.sv:44$3 ($add).
+Removed top 1 bits (of 2) from wire tt_um_arnav_mac8_fused.$flatten\u_sync.$0\seen_reset[1:0].
+
+7.12. Executing PEEPOPT pass (run peephole optimizers).
+
+7.13. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+Removed 0 unused cells and 1 unused wires.
+<suppressed ~1 debug messages>
+
+7.14. Executing ALUMACC pass (create $alu and $macc cells).
+Extracting $alu and $macc cells in module tt_um_arnav_mac8_fused:
+  creating $macc model for $flatten\u_sync.$add$src/mac8_sync.sv:109$15 ($add).
+  creating $macc model for $flatten\u_dp.$mul$src/mac8_datapath.sv:43$2 ($mul).
+  creating $macc model for $flatten\u_dp.$add$src/mac8_datapath.sv:44$3 ($add).
+  merging $macc model for $flatten\u_dp.$mul$src/mac8_datapath.sv:43$2 into $flatten\u_dp.$add$src/mac8_datapath.sv:44$3.
+  creating $alu model for $macc $flatten\u_sync.$add$src/mac8_sync.sv:109$15.
+  creating $macc cell for $flatten\u_dp.$add$src/mac8_datapath.sv:44$3: $auto$alumacc.cc:382:replace_macc$257
+  creating $alu model for $flatten\u_dp.$gt$src/mac8_datapath.sv:45$4 ($gt): new $alu
+  creating $alu model for $flatten\u_dp.$lt$src/mac8_datapath.sv:48$5 ($lt): new $alu
+  creating $alu cell for $flatten\u_dp.$lt$src/mac8_datapath.sv:48$5: $auto$alumacc.cc:512:replace_alu$260
+  creating $alu cell for $flatten\u_dp.$gt$src/mac8_datapath.sv:45$4: $auto$alumacc.cc:512:replace_alu$267
+  creating $alu cell for $flatten\u_sync.$add$src/mac8_sync.sv:109$15: $auto$alumacc.cc:512:replace_alu$280
+  created 3 $alu and 1 $macc cells.
+
+7.15. Executing SHARE pass (SAT-based resource sharing).
+
+7.16. Executing OPT pass (performing simple optimizations).
+
+7.16.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+<suppressed ~2 debug messages>
+
+7.16.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 96 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Removed a total of 0 cells.
+
+7.16.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tt_um_arnav_mac8_fused..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~14 debug messages>
+
+7.16.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tt_um_arnav_mac8_fused.
+Performed a total of 0 changes.
+
+7.16.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 96 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Removed a total of 0 cells.
+
+7.16.6. Executing OPT_DFF pass (perform DFF optimizations).
+
+7.16.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+Removed 2 unused cells and 4 unused wires.
+<suppressed ~4 debug messages>
+
+7.16.8. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+
+7.16.9. Rerunning OPT passes. (Maybe there is more to do..)
+
+7.16.10. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tt_um_arnav_mac8_fused..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~14 debug messages>
+
+7.16.11. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tt_um_arnav_mac8_fused.
+Performed a total of 0 changes.
+
+7.16.12. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 94 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Removed a total of 0 cells.
+
+7.16.13. Executing OPT_DFF pass (perform DFF optimizations).
+
+7.16.14. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+
+7.16.15. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+
+7.16.16. Finished fast OPT passes. (There is nothing left to do.)
+
+7.17. Executing MEMORY pass.
+
+7.17.1. Executing OPT_MEM pass (optimize memories).
+Performed a total of 0 transformations.
+
+7.17.2. Executing OPT_MEM_PRIORITY pass (removing unnecessary memory write priority relations).
+Performed a total of 0 transformations.
+
+7.17.3. Executing OPT_MEM_FEEDBACK pass (finding memory read-to-write feedback paths).
+
+7.17.4. Executing MEMORY_BMUX2ROM pass (converting muxes to ROMs).
+
+7.17.5. Executing MEMORY_DFF pass (merging $dff cells to $memrd).
+
+7.17.6. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+
+7.17.7. Executing MEMORY_SHARE pass (consolidating $memrd/$memwr cells).
+
+7.17.8. Executing OPT_MEM_WIDEN pass (optimize memories where all ports are wide).
+Performed a total of 0 transformations.
+
+7.17.9. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+
+7.17.10. Executing MEMORY_COLLECT pass (generating $mem cells).
+
+7.18. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+
+7.19. Executing OPT pass (performing simple optimizations).
+
+7.19.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+<suppressed ~6 debug messages>
+
+7.19.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 115 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 114 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+<suppressed ~3 debug messages>
+Removed a total of 1 cells.
+
+7.19.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+7.19.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+Removed 23 unused cells and 26 unused wires.
+<suppressed ~24 debug messages>
+
+7.19.5. Finished fast OPT passes.
+
+7.20. Executing MEMORY_MAP pass (converting memories to logic and flip-flops).
+
+7.21. Executing OPT pass (performing simple optimizations).
+
+7.21.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+
+7.21.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 91 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Removed a total of 0 cells.
+
+7.21.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \tt_um_arnav_mac8_fused..
+  Creating internal representation of mux trees.
+  Evaluating internal representation of mux trees.
+  Analyzing evaluation results.
+Removed 0 multiplexer ports.
+<suppressed ~7 debug messages>
+
+7.21.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \tt_um_arnav_mac8_fused.
+Performed a total of 0 changes.
+
+7.21.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 91 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Removed a total of 0 cells.
+
+7.21.6. Executing OPT_SHARE pass.
+
+7.21.7. Executing OPT_DFF pass (perform DFF optimizations).
+
+7.21.8. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+
+7.21.9. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+
+7.21.10. Finished fast OPT passes. (There is nothing left to do.)
+
+7.22. Executing TECHMAP pass (map to technology primitives).
+
+7.22.1. Executing Verilog-2005 frontend: /opt/homebrew/bin/../share/yosys/techmap.v
+Parsing Verilog input from `/opt/homebrew/bin/../share/yosys/techmap.v' to AST representation.
+Generating RTLIL representation for module `\_90_simplemap_bool_ops'.
+Generating RTLIL representation for module `\_90_simplemap_reduce_ops'.
+Generating RTLIL representation for module `\_90_simplemap_logic_ops'.
+Generating RTLIL representation for module `\_90_simplemap_compare_ops'.
+Generating RTLIL representation for module `\_90_simplemap_various'.
+Generating RTLIL representation for module `\_90_simplemap_registers'.
+Generating RTLIL representation for module `\_90_shift_ops_shr_shl_sshl_sshr'.
+Generating RTLIL representation for module `\_90_shift_shiftx'.
+Generating RTLIL representation for module `\_90_fa'.
+Generating RTLIL representation for module `\_90_lcu_brent_kung'.
+Generating RTLIL representation for module `\_90_alu'.
+Generating RTLIL representation for module `\_90_macc'.
+Generating RTLIL representation for module `\_90_alumacc'.
+Generating RTLIL representation for module `$__div_mod_u'.
+Generating RTLIL representation for module `$__div_mod_trunc'.
+Generating RTLIL representation for module `\_90_div'.
+Generating RTLIL representation for module `\_90_mod'.
+Generating RTLIL representation for module `$__div_mod_floor'.
+Generating RTLIL representation for module `\_90_divfloor'.
+Generating RTLIL representation for module `\_90_modfloor'.
+Generating RTLIL representation for module `\_90_pow'.
+Generating RTLIL representation for module `\_90_demux'.
+Generating RTLIL representation for module `\_90_lut'.
+Generating RTLIL representation for module `$connect'.
+Generating RTLIL representation for module `$input_port'.
+Successfully finished Verilog frontend.
+
+7.22.2. Continuing TECHMAP pass.
+Using template $paramod$175e67c02b86e96b1288b9dc100122520d7240d8\_90_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $or.
+Using extmapper simplemap for cells of type $reduce_and.
+Using extmapper simplemap for cells of type $xor.
+Using template $paramod$2e5f933a27f618afd66e8c2ed4ddcf1ef992d038\_90_alu for cells of type $alu.
+Using template $paramod$c262a9eba992bd375aee69244ae82bb2c8f55fe5\_90_alu for cells of type $alu.
+Using extmapper maccmap for cells of type $macc_v2.
+  add \u_dp.a_q * \u_dp.b_q (8x8 bits, signed)
+  add \u_dp.acc_q (24 bits, signed)
+Using extmapper simplemap for cells of type $sdff.
+Using extmapper simplemap for cells of type $sdffe.
+Using extmapper simplemap for cells of type $reduce_or.
+Using extmapper simplemap for cells of type $dff.
+Using extmapper simplemap for cells of type $eq.
+Using extmapper simplemap for cells of type $and.
+Using extmapper simplemap for cells of type $not.
+Using extmapper simplemap for cells of type $logic_not.
+Using extmapper simplemap for cells of type $logic_and.
+Using extmapper simplemap for cells of type $mux.
+Using extmapper simplemap for cells of type $pmux.
+Using template $paramod\_90_fa\WIDTH=32'00000000000000000000000000011001 for cells of type $fa.
+Using template $paramod$4868d58a04723871777326409a611fa912defcd8\_90_alu for cells of type $alu.
+Using extmapper simplemap for cells of type $pos.
+Using template $paramod\_90_fa\WIDTH=32'00000000000000000000000000000010 for cells of type $fa.
+Using template $paramod\_90_lcu_brent_kung\WIDTH=32'00000000000000000000000000000010 for cells of type $lcu.
+Using template $paramod\_90_lcu_brent_kung\WIDTH=32'00000000000000000000000000011001 for cells of type $lcu.
+No more expansions possible.
+<suppressed ~825 debug messages>
+
+7.23. Executing OPT pass (performing simple optimizations).
+
+7.23.1. Executing OPT_EXPR pass (perform const folding).
+Optimizing module tt_um_arnav_mac8_fused.
+<suppressed ~685 debug messages>
+
+7.23.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\tt_um_arnav_mac8_fused'.
+Computing hashes of 1508 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 1367 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 1288 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 1237 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 1202 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 1190 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 1172 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 1154 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 1145 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+Computing hashes of 1129 cells of `\tt_um_arnav_mac8_fused'.
+Finding duplicate cells in `\tt_um_arnav_mac8_fused'.
+<suppressed ~1137 debug messages>
+Removed a total of 379 cells.
+
+7.23.3. Executing OPT_DFF pass (perform DFF optimizations).
+
+7.23.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \tt_um_arnav_mac8_fused..
+Removed 85 unused cells and 401 unused wires.
+<suppressed ~86 debug messages>
+
+7.23.5. Finished fast OPT passes.
+
+7.24. Executing HIERARCHY pass (managing design hierarchy).
+Attribute `top' found on module `tt_um_arnav_mac8_fused'. Setting top module to tt_um_arnav_mac8_fused.
+
+7.24.1. Analyzing design hierarchy..
+Top module:  \tt_um_arnav_mac8_fused
+
+7.24.2. Analyzing design hierarchy..
+Top module:  \tt_um_arnav_mac8_fused
+Removed 0 unused modules.
+
+7.25. Printing statistics.
+
+=== tt_um_arnav_mac8_fused ===
+
+        +----------Local Count, excluding submodules.
+        | 
+      286 wires
+     1796 wire bits
+       70 public wires
+      216 public wire bits
+        8 ports
+       43 port bits
+     1044 cells
+      420   $_AND_
+        5   $_DFF_P_
+       57   $_MUX_
+       35   $_NOT_
+      183   $_OR_
+       17   $_SDFFE_PN0P_
+       27   $_SDFFE_PP0P_
+       16   $_SDFF_PN0_
+      280   $_XOR_
+        4   $scopeinfo
+
+7.26. Executing CHECK pass (checking for obvious problems).
+Checking module tt_um_arnav_mac8_fused...
+Found and reported 0 problems.
+
+8. Executing DFFLIBMAP pass (mapping DFF cells to sequential cells from liberty file).
+  cell sky130_fd_sc_hd__dfxtp_1 (noninv, pins=3, area=20.02) is a direct match for cell type $_DFF_P_.
+  cell sky130_fd_sc_hd__dfrtn_1 (noninv, pins=4, area=25.02) is a direct match for cell type $_DFF_NN0_.
+  cell sky130_fd_sc_hd__dfrtp_1 (noninv, pins=4, area=25.02) is a direct match for cell type $_DFF_PN0_.
+  cell sky130_fd_sc_hd__dfstp_2 (noninv, pins=4, area=26.28) is a direct match for cell type $_DFF_PN1_.
+  cell sky130_fd_sc_hd__edfxtp_1 (noninv, pins=4, area=30.03) is a direct match for cell type $_DFFE_PP_.
+  cell sky130_fd_sc_hd__dfbbn_1 (noninv, pins=6, area=32.53) is a direct match for cell type $_DFFSR_NNN_.
+  cell sky130_fd_sc_hd__dfbbp_1 (noninv, pins=6, area=32.53) is a direct match for cell type $_DFFSR_PNN_.
+  final dff cell mappings:
+    unmapped dff cell: $_DFF_N_
+    \sky130_fd_sc_hd__dfxtp_1 _DFF_P_ (.CLK( C), .D( D), .Q( Q));
+    \sky130_fd_sc_hd__dfrtn_1 _DFF_NN0_ (.CLK_N( C), .D( D), .Q( Q), .RESET_B( R));
+    unmapped dff cell: $_DFF_NN1_
+    unmapped dff cell: $_DFF_NP0_
+    unmapped dff cell: $_DFF_NP1_
+    \sky130_fd_sc_hd__dfrtp_1 _DFF_PN0_ (.CLK( C), .D( D), .Q( Q), .RESET_B( R));
+    \sky130_fd_sc_hd__dfstp_2 _DFF_PN1_ (.CLK( C), .D( D), .Q( Q), .SET_B( R));
+    unmapped dff cell: $_DFF_PP0_
+    unmapped dff cell: $_DFF_PP1_
+    unmapped dff cell: $_DFFE_NN_
+    unmapped dff cell: $_DFFE_NP_
+    unmapped dff cell: $_DFFE_PN_
+    \sky130_fd_sc_hd__edfxtp_1 _DFFE_PP_ (.CLK( C), .D( D), .DE( E), .Q( Q));
+    \sky130_fd_sc_hd__dfbbn_1 _DFFSR_NNN_ (.CLK_N( C), .D( D), .Q( Q), .Q_N(~Q), .RESET_B( R), .SET_B( S));
+    unmapped dff cell: $_DFFSR_NNP_
+    unmapped dff cell: $_DFFSR_NPN_
+    unmapped dff cell: $_DFFSR_NPP_
+    \sky130_fd_sc_hd__dfbbp_1 _DFFSR_PNN_ (.CLK( C), .D( D), .Q( Q), .Q_N(~Q), .RESET_B( R), .SET_B( S));
+    unmapped dff cell: $_DFFSR_PNP_
+    unmapped dff cell: $_DFFSR_PPN_
+    unmapped dff cell: $_DFFSR_PPP_
+
+8.1. Executing DFFLEGALIZE pass (convert FFs to types supported by the target).
+<suppressed ~24 debug messages>
+Mapping DFF cells in module `\tt_um_arnav_mac8_fused':
+  mapped 65 $_DFF_P_ cells to \sky130_fd_sc_hd__dfxtp_1 cells.
+
+9. Executing ABC pass (technology mapping using ABC).
+
+9.1. Extracting gate netlist of module `\tt_um_arnav_mac8_fused' to `<abc-temp-dir>/input.blif'..
+ABC: using cached merged SCL: /var/folders/97/2s6bz2xs7d55dymhpxkdj4zc0000gn/T/yosys-liberty-scl-cache/yosys_merged_876a1561.scl (1 files)
+
+9.1.1. Executed ABC.
+Extracted 1079 gates and 1149 wires to a netlist network with 68 inputs and 63 outputs.
+Running ABC script: <abc-temp-dir>/abc.script
+ABC: ======== ABC command line "source <abc-temp-dir>/abc.script"
+ABC: + read_blif <abc-temp-dir>/input.blif 
+ABC: + read_scl /var/folders/97/2s6bz2xs7d55dymhpxkdj4zc0000gn/T/yosys-liberty-scl-cache/yosys_merged_876a1561.scl 
+ABC: Warning: Detected 9 multi-output cells (for example, "sky130_fd_sc_hd__fa_1").
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &fraig -x 
+ABC: + &put 
+ABC: + scorr 
+ABC: Warning: The network is combinational (run "fraig" or "fraig_sweep").
+ABC: + dc2 
+ABC: + dretime 
+ABC: + retime -o -D 20000 
+ABC: + strash 
+ABC: + &get -n 
+ABC: + &dch -f 
+ABC: + &nf -D 20000 
+ABC: + &put 
+ABC: + write_blif <abc-temp-dir>/output.blif 
+
+9.1.2. Re-integrating ABC results.
+ABC RESULTS:   sky130_fd_sc_hd__a211o_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__a211oi_1 cells:       19
+ABC RESULTS:   sky130_fd_sc_hd__a21boi_0 cells:        2
+ABC RESULTS:   sky130_fd_sc_hd__a21o_1 cells:        5
+ABC RESULTS:   sky130_fd_sc_hd__a21oi_1 cells:       57
+ABC RESULTS:   sky130_fd_sc_hd__a22o_1 cells:        2
+ABC RESULTS:   sky130_fd_sc_hd__a22oi_1 cells:       10
+ABC RESULTS:   sky130_fd_sc_hd__a311oi_1 cells:       12
+ABC RESULTS:   sky130_fd_sc_hd__a31o_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__a31oi_1 cells:        4
+ABC RESULTS:   sky130_fd_sc_hd__and2_0 cells:       21
+ABC RESULTS:   sky130_fd_sc_hd__and3_1 cells:        7
+ABC RESULTS:   sky130_fd_sc_hd__clkinv_1 cells:       20
+ABC RESULTS:   sky130_fd_sc_hd__lpflow_inputiso1p_1 cells:       10
+ABC RESULTS:   sky130_fd_sc_hd__lpflow_isobufsrc_1 cells:       12
+ABC RESULTS:   sky130_fd_sc_hd__maj3_1 cells:       46
+ABC RESULTS:   sky130_fd_sc_hd__nand2_1 cells:      100
+ABC RESULTS:   sky130_fd_sc_hd__nand2b_1 cells:       14
+ABC RESULTS:   sky130_fd_sc_hd__nand3_1 cells:       17
+ABC RESULTS:   sky130_fd_sc_hd__nand3b_1 cells:        3
+ABC RESULTS:   sky130_fd_sc_hd__nand4_1 cells:        5
+ABC RESULTS:   sky130_fd_sc_hd__nor2_1 cells:      102
+ABC RESULTS:   sky130_fd_sc_hd__nor2b_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__nor3_1 cells:       11
+ABC RESULTS:   sky130_fd_sc_hd__nor4_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__o2111a_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__o21a_1 cells:        2
+ABC RESULTS:   sky130_fd_sc_hd__o21ai_0 cells:       37
+ABC RESULTS:   sky130_fd_sc_hd__o22ai_1 cells:        6
+ABC RESULTS:   sky130_fd_sc_hd__o311ai_0 cells:        2
+ABC RESULTS:   sky130_fd_sc_hd__o31ai_1 cells:        2
+ABC RESULTS:   sky130_fd_sc_hd__o32ai_1 cells:        1
+ABC RESULTS:   sky130_fd_sc_hd__or3_1 cells:        7
+ABC RESULTS:   sky130_fd_sc_hd__xnor2_1 cells:      125
+ABC RESULTS:   sky130_fd_sc_hd__xnor3_1 cells:       13
+ABC RESULTS:   sky130_fd_sc_hd__xor2_1 cells:       67
+ABC RESULTS:        internal signals:     1018
+ABC RESULTS:           input signals:       68
+ABC RESULTS:          output signals:       63
+Removing temp directory.
+Removing global temp directory.
+Removed 0 unused cells and 416 unused wires.
+
+10. Executing CHECK pass (checking for obvious problems).
+Checking module tt_um_arnav_mac8_fused...
+Found and reported 0 problems.
+{
+   "creator": "Yosys 0.67+post (git sha1 b8e7da6f40ae8f552c116bf6c359b07c6533e159, Release, AppleClang clang++ 17.0.0.17000604)",
+   "invocation": "stat -json -liberty \"/Users/arnavsingh/.volare/volare/sky130/versions/c6d73a35f524070e85faff4a6a9eef49553ebc2b/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib\" ",
+   "modules": {
+      "\\tt_um_arnav_mac8_fused": {
+         "num_wires":         788,
+         "num_wire_bits":     880,
+         "num_pub_wires":     43,
+         "num_pub_wire_bits": 135,
+         "num_ports":         8,
+         "num_port_bits":     43,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         811,
+         "num_submodules":       0,
+         "area":              6230.976000,
+         "sequential_area":    1301.248000,
+         "num_cells_by_type": {
+            "sky130_fd_sc_hd__a211o_1": 1,
+            "sky130_fd_sc_hd__a211oi_1": 19,
+            "sky130_fd_sc_hd__a21boi_0": 2,
+            "sky130_fd_sc_hd__a21o_1": 5,
+            "sky130_fd_sc_hd__a21oi_1": 57,
+            "sky130_fd_sc_hd__a22o_1": 2,
+            "sky130_fd_sc_hd__a22oi_1": 10,
+            "sky130_fd_sc_hd__a311oi_1": 12,
+            "sky130_fd_sc_hd__a31o_1": 1,
+            "sky130_fd_sc_hd__a31oi_1": 4,
+            "sky130_fd_sc_hd__and2_0": 21,
+            "sky130_fd_sc_hd__and3_1": 7,
+            "sky130_fd_sc_hd__clkinv_1": 20,
+            "sky130_fd_sc_hd__dfxtp_1": 65,
+            "sky130_fd_sc_hd__lpflow_inputiso1p_1": 10,
+            "sky130_fd_sc_hd__lpflow_isobufsrc_1": 12,
+            "sky130_fd_sc_hd__maj3_1": 46,
+            "sky130_fd_sc_hd__nand2_1": 100,
+            "sky130_fd_sc_hd__nand2b_1": 14,
+            "sky130_fd_sc_hd__nand3_1": 17,
+            "sky130_fd_sc_hd__nand3b_1": 3,
+            "sky130_fd_sc_hd__nand4_1": 5,
+            "sky130_fd_sc_hd__nor2_1": 102,
+            "sky130_fd_sc_hd__nor2b_1": 1,
+            "sky130_fd_sc_hd__nor3_1": 11,
+            "sky130_fd_sc_hd__nor4_1": 1,
+            "sky130_fd_sc_hd__o2111a_1": 1,
+            "sky130_fd_sc_hd__o21a_1": 2,
+            "sky130_fd_sc_hd__o21ai_0": 37,
+            "sky130_fd_sc_hd__o22ai_1": 6,
+            "sky130_fd_sc_hd__o311ai_0": 2,
+            "sky130_fd_sc_hd__o31ai_1": 2,
+            "sky130_fd_sc_hd__o32ai_1": 1,
+            "sky130_fd_sc_hd__or3_1": 7,
+            "sky130_fd_sc_hd__xnor2_1": 125,
+            "sky130_fd_sc_hd__xnor3_1": 13,
+            "sky130_fd_sc_hd__xor2_1": 67
+         }
+      }
+   },
+      "design": {
+         "num_wires":         788,
+         "num_wire_bits":     880,
+         "num_pub_wires":     43,
+         "num_pub_wire_bits": 135,
+         "num_ports":         8,
+         "num_port_bits":     43,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         811,
+         "num_submodules":       0,
+         "area":              6230.976000,
+         "sequential_area":    1301.248000,
+         "num_cells_by_type": {
+            "sky130_fd_sc_hd__a211o_1": 1,
+            "sky130_fd_sc_hd__a211oi_1": 19,
+            "sky130_fd_sc_hd__a21boi_0": 2,
+            "sky130_fd_sc_hd__a21o_1": 5,
+            "sky130_fd_sc_hd__a21oi_1": 57,
+            "sky130_fd_sc_hd__a22o_1": 2,
+            "sky130_fd_sc_hd__a22oi_1": 10,
+            "sky130_fd_sc_hd__a311oi_1": 12,
+            "sky130_fd_sc_hd__a31o_1": 1,
+            "sky130_fd_sc_hd__a31oi_1": 4,
+            "sky130_fd_sc_hd__and2_0": 21,
+            "sky130_fd_sc_hd__and3_1": 7,
+            "sky130_fd_sc_hd__clkinv_1": 20,
+            "sky130_fd_sc_hd__dfxtp_1": 65,
+            "sky130_fd_sc_hd__lpflow_inputiso1p_1": 10,
+            "sky130_fd_sc_hd__lpflow_isobufsrc_1": 12,
+            "sky130_fd_sc_hd__maj3_1": 46,
+            "sky130_fd_sc_hd__nand2_1": 100,
+            "sky130_fd_sc_hd__nand2b_1": 14,
+            "sky130_fd_sc_hd__nand3_1": 17,
+            "sky130_fd_sc_hd__nand3b_1": 3,
+            "sky130_fd_sc_hd__nand4_1": 5,
+            "sky130_fd_sc_hd__nor2_1": 102,
+            "sky130_fd_sc_hd__nor2b_1": 1,
+            "sky130_fd_sc_hd__nor3_1": 11,
+            "sky130_fd_sc_hd__nor4_1": 1,
+            "sky130_fd_sc_hd__o2111a_1": 1,
+            "sky130_fd_sc_hd__o21a_1": 2,
+            "sky130_fd_sc_hd__o21ai_0": 37,
+            "sky130_fd_sc_hd__o22ai_1": 6,
+            "sky130_fd_sc_hd__o311ai_0": 2,
+            "sky130_fd_sc_hd__o31ai_1": 2,
+            "sky130_fd_sc_hd__o32ai_1": 1,
+            "sky130_fd_sc_hd__or3_1": 7,
+            "sky130_fd_sc_hd__xnor2_1": 125,
+            "sky130_fd_sc_hd__xnor3_1": 13,
+            "sky130_fd_sc_hd__xor2_1": 67
+         }
+      }
+}
+
+11. Executing Verilog backend.
+
+11.1. Executing BMUXMAP pass.
+
+11.2. Executing DEMUXMAP pass.
+Dumping module `\tt_um_arnav_mac8_fused'.

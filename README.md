@@ -7,36 +7,75 @@ accumulator, one command decoder. The atom of AI compute, small enough to
 tape out, deep enough to defend line by line.
 
 Built RTL to GDS on open tools, SystemVerilog, cocotb, Icarus, Verilator,
-LibreLane through the Tiny Tapeout flow. Every number below comes from a
-real run.
+LibreLane through the Tiny Tapeout flow. Results are labeled by simulation, synthesis or physical-design stage.
 
 Implementation was agent assisted. The design decisions, the review
 rulings, the verification strategy, and the adversarial audits are owned by
 me.
 
-## Current state
+## DSP application and optimization
 
-Submitted to the TTSKY26c shuttle. Revisions stay open until 2026-09-07,
-and any revision is gated on the sealed netlist hash below staying
-unchanged. Hardened and green through five review rounds and a submission
-readiness audit, the formal proof mutation gated after two vacuity audits,
-the annotated timing flow rebuilt after a third. Spec v0.5 corrects the
-SEL read floor to 5 clocks, a driver contract correction found by the
-audit's boundary probe, RTL and netlist unchanged.
+MAC8 now runs a host-controlled, 16-tap INT8 FIR filter through the actual
+pin interface. The driver, independent integer reference, captured samples,
+waveform and spectrum are included. A separately versioned fused-load/MAC
+candidate reduces execution from **364 to 252 simulated cycles per output**
+with **1.28% higher mapped cell area** under identical synthesis conditions.
+
+| Evidence | Result | Scope |
+|---|---:|---|
+| Signed multiplication | All 65,536 operand pairs | RTL datapath simulation |
+| Application regressions | 9 tests per RTL variant | Pins, exact arithmetic, reset and busy |
+| Command soak | 100,000 operations per variant | Deterministic seeds, saturation and recovery |
+| FIR trace | 128 outputs, zero integer mismatches | Baseline and fused RTL |
+| Fused scheduling | BMC, induction and reachable covers pass | Control properties; arithmetic outside proof |
+| Fault injection | 3 application mutants and 1 formal mutant caught | Old B, missing MAC, busy and reset |
+
+[Open the interactive evidence page](reports/dsp-demo/index.html),
+[inspect the optimization](docs/OPTIMIZATION.md), or
+[run the board demo](docs/BRINGUP.md).
+
+![Pin-level FIR trace and spectrum](reports/dsp-demo/fir-results.png)
+
+```mermaid
+flowchart LR
+    H[Host: coefficients and sample history] --> I[Operand bus + synchronized commands]
+    I --> M[Signed 8 x 8 multiplier]
+    M --> A[24-bit saturating accumulator]
+    A --> O[Registered byte readback]
+    O --> H
+    A --> F[Sticky overflow]
+```
+
+## Implementation and submission status
+
+The baseline has a successful historical SKY130 hardening build and
+15 passing Tiny Tapeout prechecks. The archived raw reports below establish
+that implementation result. **Portal submission, payment and allocation
+are unverified** because this repository does not contain a confirmed
+project ID, revision and receipt. Fabrication and physical bring-up are
+separate milestones.
+
+The baseline remains at spec v0.5. The fused candidate lives in
+`experiments/fused/` with its own module name and opcode contract; its
+workflow stages and hardens that version independently. The candidate
+is experimental until its routed timing, prechecks and gate-level
+application results are reviewed. W1 max-transition exceptions remain
+visible for the baseline.
 
 ## The seal
 
-Every number here cites one netlist, the final hardened run and its sha256.
+The historical physical-design numbers here cite one netlist and its sha256.
 The waiver, the datasheet, and this README describe that sealed package from
 outside it, they are documentation, not new state.
 
 | Seal | Value |
 |---|---|
 | Final hardened run | CI 29401092054 |
-| Commit | 49f5f29 |
+| Commit | 49f5f298692f274c6613cdc940e0cee991281943 |
+| Raw reports | [Hash manifest](reports/sealed/29401092054/manifest.json), [successful CI run](https://github.com/Arnav66692/mac8/actions/runs/29401092054) |
 | Netlist sha256, the one hash | 5d41493182cd1ece30f2f4a2bdabdf5433400f7b508858161ea6f72db4f13fb0 |
 
-## Numbers
+## Historical baseline physical-design results
 
 | Number | Value |
 |---|---|
@@ -47,7 +86,7 @@ outside it, they are documentation, not new state.
 | DRC, LVS, antenna | 0, 0, 0 |
 | Tests | 9 datapath plus 14 protocol white box RTL, 14 pin only gate level, all green |
 | Formal | handshake proven unbounded, yosys smtbmc with z3, BMC 60, induction closes at step 30, mutation gated, formal/README.md |
-| Metastability MTBF bound | any tau below 346 ps outlives the universe age at the 20 MHz worst legal transition rate, extracted ss tau 134 ps, margin 2.58x, docs/CDC_MTBF.md |
+| Metastability MTBF bound | Conditional estimate using the extraction assumptions in [CDC_MTBF.md](docs/CDC_MTBF.md); not a measured silicon failure rate |
 
 ## The two waived warts
 
@@ -98,10 +137,26 @@ docs/    SPEC.md the frozen contract, CDC_MTBF.md the metastability bound,
 formal/  the mutation gated handshake proof, README, harness, gate script
 ```
 
-## How to test
+## Reproduce the application
 
-Run from the repo root. Every line below executes verbatim from a fresh
-clone.
+```sh
+python -m unittest app.test_reference -v
+make -C verification -f arithmetic.mk
+make -C verification VARIANT=baseline
+make -C verification VARIANT=fused
+python scripts/check_app_mutations.py
+python scripts/check_fused_control.py
+```
+
+The application suites each include the full 100,000-operation soak.
+[Verification matrix](docs/VERIFICATION_MATRIX.md) records the requirements,
+seeds, proof assumptions and remaining hardware measurements. Local report
+rendering requires numpy, matplotlib, a SKY130 Liberty synthesis run and the
+archived reports; see [OPTIMIZATION.md](docs/OPTIMIZATION.md).
+
+## How to test the baseline
+
+Run from the repo root. Install Icarus and Verilator on your PATH before these commands.
 
 ```
 # one time venv, outside the repo, cocotb 2.0.1 needs Python 3.13 or lower

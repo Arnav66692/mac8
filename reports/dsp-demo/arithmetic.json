@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "operand_pairs": 65536,
+  "source_sha256": {
+    "src/mac8_datapath.sv": "c48399ba7790cb97bfc414149110de99cac78d02e4cd1ff32161040e2bc0f03e",
+    "verification/test_arithmetic.py": "4e0cfaa76d256d17f819bccfd391aeec7b24c12614dcaf7e59bdfca7c33656ff",
+    "verification/arithmetic.mk": "1aa8b926547c8a894f10b3b8045ebfbbb1113f4baeab872c7823a1d2baab1245"
+  }
+}

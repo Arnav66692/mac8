@@ -1,0 +1,64 @@
+name: fused-experiment
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/mac8-dsp-demo]
+    paths:
+      - 'experiments/fused/**'
+      - 'src/**'
+      - '.github/workflows/fused.yaml'
+jobs:
+  gds:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - name: Stage isolated candidate in this job
+        run: |
+          cp experiments/fused/tt_um_arnav_mac8_fused.sv src/tt_um_arnav_mac8_fused.sv
+          cp experiments/fused/info.md docs/info.md
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('info.yaml')
+          text = path.read_text()
+          text = text.replace('MAC8 serial multiply accumulate', 'MAC8 fused-load DSP experiment')
+          text = text.replace('tt_um_arnav_mac8"', 'tt_um_arnav_mac8_fused"')
+          text = text.replace('tt_um_arnav_mac8.sv', 'tt_um_arnav_mac8_fused.sv')
+          path.write_text(text)
+          PY
+      - uses: TinyTapeout/tt-gds-action@ttsky26c
+        with:
+          pdk: sky130A
+  precheck:
+    needs: gds
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: TinyTapeout/tt-gds-action/precheck@ttsky26c
+  application_gate:
+    needs: gds
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - run: |
+          sudo apt-get update && sudo apt-get install -y iverilog
+          pip install -r test/requirements.txt volare
+          volare enable --pdk sky130 8afc8346a57fe1ab7934ba5a6056ea8b43078e71
+      - uses: actions/download-artifact@v7
+        with:
+          name: GDS_logs
+          path: candidate_logs
+      - name: Run application on this candidate's hardened netlist
+        run: |
+          cp candidate_logs/runs/wokwi/final/pnl/tt_um_arnav_mac8_fused.pnl.v test/gate_level_netlist.v
+          export PDK_ROOT=$HOME/.volare
+          make -C verification VARIANT=fused-gate
+          python scripts/check_results.py verification/results_fused-gate.xml --expect-from-tests verification/test_app.py
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: fused-gate-application
+          path: |
+            verification/results_fused-gate.xml
+            reports/dsp-demo/fused-gate*.json

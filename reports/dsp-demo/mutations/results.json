@@ -1,0 +1,27 @@
+{
+  "control": "passed",
+  "busy_control": "passed",
+  "old_b_operand": "caught",
+  "missing_fused_mac": "caught",
+  "busy_stuck_low": "caught",
+  "status": "passed",
+  "source_sha256": {
+    "app/test_reference.py": "78f8c08bfb72c1053234466577588f66b25c7892d2af14ed459aa222e2dd0f63",
+    "app/__init__.py": "42bf8eb3da031162aab2b5068ced56506c77e0615f8a8ad2ae1c9ca5aff3968d",
+    "app/gpio.py": "7fa77e13831d1149fc54a2db9a80e3ed64edfa6847c32caaf7d2753b6b2af475",
+    "app/reference.py": "385be0feacf52876aaae878ecfb9c22228d80ee357054d2dd0f0a7dac66b514f",
+    "app/board_demo.py": "fc1fb2cd1921065ac1946b371898afd09606638147780fdcc68eb7ff2f01c242",
+    "app/driver.py": "38a617da0507900f23b134d4ca169a82a18179f6fb855471ecafcad313f2fa3a",
+    "src/mac8_sync.sv": "eba4fbbc5869fc3f264b874d6285606ed620e6b747acb164681614963040622c",
+    "src/mac8_ctrl.sv": "951a60e819926041b2bee73ef6f78ef9008fde3f6014d6e122fd3e504c548523",
+    "src/mac8_rst_sync.sv": "921dd388b3220a9808e09e2387176181104e1ed42b41bba0c0fd9043c2e59d9e",
+    "src/tt_um_arnav_mac8.sv": "9383b76c3babfabb872730a5ab4a9b6ddb5c0e8f4a2e83a3212fa9cbb1cd06c2",
+    "src/mac8_datapath.sv": "c48399ba7790cb97bfc414149110de99cac78d02e4cd1ff32161040e2bc0f03e",
+    "experiments/fused/tt_um_arnav_mac8_fused.sv": "5078472742729b286315b6cf00ff215f4467e7a998e1e1887be899d3a2be566d",
+    "verification/test_arithmetic.py": "4e0cfaa76d256d17f819bccfd391aeec7b24c12614dcaf7e59bdfca7c33656ff",
+    "verification/test_app.py": "19018cd802ce38444adb136e066817729f4f02098cd5563a2172b4cab13af524",
+    "verification/tb_app.sv": "5bb890618883bd72e1af99c168e301a915d85a9d69c5899062edb9dcadf1cffd",
+    "verification/Makefile": "88e66de8cd14606a3f8334cab9ddf16ad36c8588818d7006769d55c54b4d2011",
+    "scripts/check_app_mutations.py": "06b2eb8aafc0acb8f6a0522ed7e75021aa275d306cedd5d9127fc557a0b91632"
+  }
+}

@@ -1,0 +1,10 @@
+read_liberty -lib "/Users/arnavsingh/.volare/volare/sky130/versions/c6d73a35f524070e85faff4a6a9eef49553ebc2b/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib"
+read_verilog -sv -DSYNTHESIS src/mac8_datapath.sv src/mac8_sync.sv src/mac8_rst_sync.sv src/mac8_ctrl.sv experiments/fused/tt_um_arnav_mac8_fused.sv
+synth -top tt_um_arnav_mac8_fused -flatten -noabc
+delete t:$scopeinfo
+dfflibmap -liberty "/Users/arnavsingh/.volare/volare/sky130/versions/c6d73a35f524070e85faff4a6a9eef49553ebc2b/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib"
+abc -liberty "/Users/arnavsingh/.volare/volare/sky130/versions/c6d73a35f524070e85faff4a6a9eef49553ebc2b/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib" -D 20000
+clean
+check -assert
+tee -o reports/dsp-demo/synthesis/fused.json stat -json -liberty "/Users/arnavsingh/.volare/volare/sky130/versions/c6d73a35f524070e85faff4a6a9eef49553ebc2b/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib"
+write_verilog -noattr reports/dsp-demo/synthesis/fused.v

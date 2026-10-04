@@ -1,0 +1,16 @@
+{
+  "base": "PASSED",
+  "induction": "PASSED",
+  "covers": "PASSED",
+  "missing_pending_reset": "FAILED",
+  "scope": "pending scheduling, reset cancellation, pulse exclusion; not arithmetic equivalence or physical CDC",
+  "status": "passed",
+  "source_sha256": {
+    "src/mac8_datapath.sv": "c48399ba7790cb97bfc414149110de99cac78d02e4cd1ff32161040e2bc0f03e",
+    "src/mac8_sync.sv": "eba4fbbc5869fc3f264b874d6285606ed620e6b747acb164681614963040622c",
+    "src/mac8_rst_sync.sv": "921dd388b3220a9808e09e2387176181104e1ed42b41bba0c0fd9043c2e59d9e",
+    "src/mac8_ctrl.sv": "951a60e819926041b2bee73ef6f78ef9008fde3f6014d6e122fd3e504c548523",
+    "experiments/fused/tt_um_arnav_mac8_fused.sv": "5078472742729b286315b6cf00ff215f4467e7a998e1e1887be899d3a2be566d",
+    "scripts/check_fused_control.py": "d86cbd697b55f47b2710369c5015c3a8490cd1d6528fe8e85b382d66568c6e44"
+  }
+}

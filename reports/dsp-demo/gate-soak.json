@@ -1,0 +1,27 @@
+{
+  "variant": "gate",
+  "seed": "0x534f414b",
+  "scheduled_operations": 10000,
+  "mismatches": 0,
+  "functional_bins": {
+    "opcodes": [
+      408,
+      438,
+      455,
+      458,
+      6897,
+      413,
+      479,
+      452
+    ],
+    "positive_saturation": 683,
+    "negative_saturation": 659,
+    "sticky_clear": 10,
+    "reset": 0,
+    "read_bytes": [
+      413,
+      479,
+      452
+    ]
+  }
+}

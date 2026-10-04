@@ -21,3 +21,5 @@ test/gate_level_netlist.v
 formal/build/
 test/sdf_*.sdf
 test/gl_sdf_*.log*
+reports/dsp-demo/formal/*.smt2
+reports/dsp-demo/synthesis/*.v

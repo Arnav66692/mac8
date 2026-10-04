@@ -1,0 +1,36 @@
+{
+  "baseline": {
+    "cells": 805,
+    "cell_area_um2": 6152.1504,
+    "source_sha256": {
+      "src/mac8_datapath.sv": "c48399ba7790cb97bfc414149110de99cac78d02e4cd1ff32161040e2bc0f03e",
+      "src/mac8_sync.sv": "eba4fbbc5869fc3f264b874d6285606ed620e6b747acb164681614963040622c",
+      "src/mac8_rst_sync.sv": "921dd388b3220a9808e09e2387176181104e1ed42b41bba0c0fd9043c2e59d9e",
+      "src/mac8_ctrl.sv": "951a60e819926041b2bee73ef6f78ef9008fde3f6014d6e122fd3e504c548523",
+      "src/tt_um_arnav_mac8.sv": "9383b76c3babfabb872730a5ab4a9b6ddb5c0e8f4a2e83a3212fa9cbb1cd06c2",
+      "scripts/compare_synthesis.py": "d4737abdd596a116c56b7a3105f1b1fe64fbaa4f1cafbd32f2f002a5c2f73c83"
+    }
+  },
+  "fused": {
+    "cells": 811,
+    "cell_area_um2": 6230.976,
+    "source_sha256": {
+      "src/mac8_datapath.sv": "c48399ba7790cb97bfc414149110de99cac78d02e4cd1ff32161040e2bc0f03e",
+      "src/mac8_sync.sv": "eba4fbbc5869fc3f264b874d6285606ed620e6b747acb164681614963040622c",
+      "src/mac8_rst_sync.sv": "921dd388b3220a9808e09e2387176181104e1ed42b41bba0c0fd9043c2e59d9e",
+      "src/mac8_ctrl.sv": "951a60e819926041b2bee73ef6f78ef9008fde3f6014d6e122fd3e504c548523",
+      "experiments/fused/tt_um_arnav_mac8_fused.sv": "5078472742729b286315b6cf00ff215f4467e7a998e1e1887be899d3a2be566d",
+      "scripts/compare_synthesis.py": "d4737abdd596a116c56b7a3105f1b1fe64fbaa4f1cafbd32f2f002a5c2f73c83"
+    }
+  },
+  "status": "passed",
+  "method": {
+    "stage": "synthesis library mapping, not place and route",
+    "yosys": "Yosys 0.67+post (git sha1 b8e7da6f40ae8f552c116bf6c359b07c6533e159, Release, AppleClang clang++ 17.0.0.17000604)",
+    "liberty_name": "sky130_fd_sc_hd__tt_025C_1v80.lib",
+    "liberty_sha256": "8e78e14442062dba34d414fca6490b2f6b96038d4510d1438ca44fee31487135",
+    "abc_delay_target_ps": 20000,
+    "area_source": "Liberty cell areas",
+    "routed_timing": "not measured"
+  }
+}
