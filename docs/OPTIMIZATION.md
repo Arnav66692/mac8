@@ -57,6 +57,44 @@ source hashes, logs, plot and input/output CSV live in reports/dsp-demo.
 The renderer refuses stale source hashes, incomplete regressions,
 unfinished proof/mutation runs or altered historical reports.
 
+## Routed comparison, completed 2026-10-04
+
+The baseline and fused candidate were hardened at the same source commit,
+9ac84c5. Post-route configuration differs only in DESIGN_NAME. Both use
+LibreLane 3.0.5 and SKY130 PDK 8afc8346. Both runs and all downstream checks
+pass. The baseline netlist is byte-identical to the historical seal.
+
+| Routed result | Baseline | Fused |
+|---|---:|---:|
+| Standard cells | 1188 | 1203 |
+| Standard-cell area, square micrometers | 10547.6 | 10704.0 |
+| Utilization, percent | 63.95 | 64.90 |
+| Worst setup slack, ns | +1.556 | +0.702 |
+| Worst hold slack, ns | +0.111 | +0.114 |
+| Worst-corner max-transition violations | 254 | 282 |
+| DRC, LVS, antenna errors | 0, 0, 0 | 0, 0, 0 |
+| Tiny Tapeout prechecks | 15 of 15 | 15 of 15 |
+
+Routed standard-cell area increases **1.48 percent**. Setup and hold meet
+across all nine corners. The candidate's powered netlist passes the nine
+application tests, including the full 100000-operation soak and exact FIR
+outputs. These are functional gate simulations. The existing baseline's
+14-test SDF job also passes on its freshly generated netlist and SDF.
+
+The transition violations remain, with a larger count on the candidate.
+Its slow-corner maximum reported slew is 1.225 ns against the 0.750 ns
+limit. Existing W1 acceptance does not approve the candidate. Keep the
+fused design experimental until a separate transition and waiver review.
+The reduced cycles do not justify claiming a higher clock rate or lower
+energy use.
+
+[Baseline build](https://github.com/Arnav66692/mac8/actions/runs/37242546187),
+[fused build](https://github.com/Arnav66692/mac8/actions/runs/37242546160),
+[comparison manifest](../reports/dsp-demo/routed-comparison.json) and
+[source-matched DSP CI](https://github.com/Arnav66692/mac8/actions/runs/37242546203).
+Raw metrics, per-corner checks, configuration, prechecks and the candidate
+application captures are archived under reports/routed with file hashes.
+
 ## Evidence and remaining measurements
 
 The original build's raw metrics, all nine post-route corner reports,
@@ -65,8 +103,9 @@ Their manifest verifies the downloaded raw netlist against the recorded
 seal and records every archived file hash. This verifies an implementation
 build, not payment or allocation in the submission portal.
 
-Before adopting the fused candidate, inspect its separate hardened run,
-precheck, gate-level application regression and routed corner results.
+Before adopting the fused candidate, review its transition exceptions and
+confirm the intended portal revision. Its hardening, precheck, gate-level
+application regression and routed corner results are now archived.
 Keep W1 max-transition exceptions visible. Measure physical FIR throughput
 and host-software runtime using app/board_demo.py when the actual design
 is available on a board. Submission receipt, fabrication and silicon
@@ -81,8 +120,8 @@ Current application and optimization evidence supports these lines.
 > and 200000 scheduled operations across baseline and optimized RTL.
 
 > Reduced FIR execution from 364 to 252 simulated cycles through a fused
-> operand-load/MAC protocol, with 1.28 percent higher mapped cell area under
-> identical SKY130 synthesis conditions. Proved scheduling invariants and
+> operand-load/MAC protocol, with 1.48 percent higher routed standard-cell area under
+> identical SKY130 implementation conditions and nine-corner setup/hold met. Proved scheduling invariants and
 > mutation-tested stale operands, missing execution and busy signaling.
 
 For silicon, replace simulated cycles with measured system throughput

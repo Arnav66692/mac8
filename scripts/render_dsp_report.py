@@ -64,6 +64,20 @@ def main():
     for path, expected in sealed["files_sha256"].items():
         if hashlib.sha256((sealed_root / path).read_bytes()).hexdigest() != expected:
             raise RuntimeError("historical report hash mismatch: " + path)
+    routed = load("routed-comparison.json")
+    if routed.get("status") != "measured" or not routed["same_configuration_except_design_name"]:
+        raise RuntimeError("routed comparison is incomplete")
+    for variant in ("baseline", "fused"):
+        record = routed[variant]
+        check_sources(record)
+        archive = ROOT / "reports/routed" / str(record["run_id"])
+        for path, expected in record["files_sha256"].items():
+            if hashlib.sha256((archive / path).read_bytes()).hexdigest() != expected:
+                raise RuntimeError("routed archive hash mismatch: " + path)
+    gate_record = json.loads((ROOT / "reports/routed" / str(routed["fused"]["run_id"]) /
+                             "application/reports/dsp-demo/fused-gate.json").read_text())
+    if gate_record["raw_outputs"] != fused["raw_outputs"]:
+        raise RuntimeError("hardened candidate application differs from RTL")
 
     samples = np.array(baseline["samples"])
     filtered = np.array(baseline["raw_outputs"]) / 128
@@ -99,12 +113,13 @@ def main():
     reduction = 100 * (1 - cycles_b / cycles_a)
     area_a, area_b = synthesis["baseline"]["cell_area_um2"], synthesis["fused"]["cell_area_um2"]
     area_change = 100 * (area_b / area_a - 1)
-    hero_path = ROOT.parent / "render/isometric.png"
-    hero = base64.b64encode(hero_path.read_bytes()).decode() if hero_path.is_file() else ""
+    hero_path = ROOT / "docs/images/mac8-isometric.png"
+    hero = base64.b64encode(hero_path.read_bytes()).decode()
     manifest = {"status": "passed", "date_assessed": "2026-10-04",
                 "baseline": baseline, "fused": fused,
                 "cycle_reduction_percent": reduction,
                 "synthesis_cell_area_change_percent": area_change,
+                "routed_comparison": routed,
                 "formal_scope": formal["scope"], "mutation_results": mutations,
                 "historical_build_url": sealed["run_url"],
                 "portal_status": "unverified", "physical_demo": "not measured"}
@@ -133,14 +148,14 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 <nav><span class="brand">AS / MAC8</span><span>SYSTEMVERILOG · VERIFICATION · SKY130</span></nav>
 <div class="hero"><div><div class="eyebrow">ARNAV SINGH · DIGITAL DESIGN</div><h1>INT8 compute,<br>verified from pins<br>to layout.</h1>
 <p class="intro">A signed multiply-accumulate core with 24-bit saturation, a working FIR application, and a measured protocol optimization. Built with open ASIC tools and explicit verification boundaries.</p>
-<div class="badges"><span class="badge green">Baseline hardened</span><span class="badge">DSP simulated</span><span class="badge">Fused candidate experimental</span></div></div>
+<div class="badges"><span class="badge green">Baseline hardened</span><span class="badge">DSP gate-tested</span><span class="badge">Fused hardened experiment</span></div></div>
 <div><img class="chip" src="data:image/png;base64,@HERO@" alt="Isometric rendering of the actual baseline MAC8 GDS"><p class="caption">Actual baseline layout. Build 29401092054, SKY130, one Tiny Tapeout tile.</p></div></div>
 <div class="stats"><div class="stat"><div class="value">65,536</div><div class="label">Signed operand pairs checked in RTL</div></div><div class="stat"><div class="value">200,000</div><div class="label">Scheduled operations across two RTL variants</div></div><div class="stat"><div class="value">@REDUCTION@%</div><div class="label">Fewer simulated cycles per FIR output</div></div><div class="stat"><div class="value">15 / 15</div><div class="label">Historical baseline prechecks passed</div></div></div>
 <section><div class="section-top"><div><div class="eyebrow">APPLICATION</div><h2>Turn noisy samples into a useful signal.</h2></div><p>128 outputs per variant. Zero integer mismatches.</p></div><img class="plot" src="fir-results.png" alt="Captured noisy input, MAC8 filtered output, and their frequency spectra"><p class="caption">Host stores coefficients and sample history. MAC8 performs the arithmetic. The 16-tap filter introduces a 7.5-sample group delay. Plot values are from simulation; no physical throughput is claimed.</p></section>
 <section class="two"><div class="card"><div class="eyebrow">ARCHITECTURE</div><h2>One multiplier. A precise contract.</h2><div class="flow" aria-label="Host samples and coefficients flow into MAC8, then three-byte readback"><div class="node">Host<br>samples + coefficients</div><span aria-hidden="true">→</span><div class="node chip-node">MAC8<br>8 × 8 → sat24</div><span aria-hidden="true">→</span><div class="node">Readback<br>3 bytes</div></div><p class="muted">The host supplies signed operands over an 8-bit bus. A synchronized strobe accepts commands. Sticky overflow records saturation. The output register exposes the selected accumulator byte.</p><a href="../../docs/BRINGUP.md">Driver and bring-up guide →</a></div>
 <div class="card"><div class="section-top"><div class="eyebrow">CYCLE EXPERIMENT</div><div class="switch"><button type="button" id="baseline" aria-pressed="true">Baseline</button><button type="button" id="fused" aria-pressed="false">Fused</button></div></div><h2 id="variantTitle">Three commands per fresh pair</h2><div class="metric"><span id="cycles">@BASE_CYCLES@</span> cycles / FIR output</div><div class="track"><div id="bar" class="bar" style="width:100%"></div></div><p id="commands" class="muted">LDA → LDB → MAC. Includes CLR and full readback.</p><p class="caption">Same one-clock setup, three-clock strobe, three-clock low interval. 50 MHz assumed. Software GPIO overhead is excluded.</p></div></section>
-<section><div class="eyebrow">RESULTS</div><h2>A tradeoff you can reproduce.</h2><div class="card"><table><thead><tr><th>Metric</th><th>Baseline</th><th>Fused candidate</th></tr></thead><tbody><tr><td>Simulated cycles / 16-tap output</td><td>@BASE_CYCLES@</td><td class="positive">@FUSED_CYCLES@</td></tr><tr><td>Equivalent outputs/s at assumed 50 MHz</td><td>@BASE_RATE@</td><td>@FUSED_RATE@</td></tr><tr><td>Mapped standard cells, local synthesis</td><td>@BASE_CELLS@</td><td>@FUSED_CELLS@</td></tr><tr><td>Mapped cell area, µm²</td><td>@BASE_AREA@</td><td>@FUSED_AREA@</td></tr><tr><td>Routed candidate timing and area</td><td colspan="2">Not measured in this local report. Experimental hardening runs separately.</td></tr></tbody></table><p class="caption">Local Yosys comparison uses the same SKY130 typical-corner Liberty and 20 ns ABC mapping target. Cell area changes by @AREA_CHANGE@%. Synthesis estimates are distinct from routed area, STA and silicon measurements.</p></div></section>
-<section class="two"><div class="card"><div class="eyebrow">VERIFICATION</div><h2>Prove the scope. Break the protections.</h2><ul class="muted"><li>Exhaustive signed multiplication and exact FIR references.</li><li>Both saturation rails, sticky overflow, byte reads and reset recovery.</li><li>Fused scheduling invariants pass BMC and induction, with reachable covers.</li><li>Old-B, missing-MAC and stuck-low busy mutants are caught.</li><li>A missing pending-reset mutant fails the control proof.</li></ul><p class="caption">Formal scope covers scheduling and selected handshake properties. Arithmetic equivalence and physical metastability are outside those proofs.</p><a href="../../docs/VERIFICATION_MATRIX.md">Requirements and proof boundaries →</a></div><div class="card evidence"><div class="eyebrow">EVIDENCE</div><h2>Inspect the engineering.</h2><a href="results.json">Application results and source hashes</a><a href="fir-results.csv">Captured input and output CSV</a><a href="synthesis/comparison.json">Synthesis comparison</a><a href="../sealed/29401092054/manifest.json">Historical raw-report manifest</a><a href="../sealed/29401092054/precheck/results.md">15 baseline prechecks</a><a href="../../docs/OPTIMIZATION.md">Optimization method and resume wording</a><p class="caption">Baseline raw metrics: @SEALED_CELLS@ cells, +@SETUP@ ns setup, +@HOLD@ ns hold. Max-transition exceptions remain documented in W1. Portal submission status is unverified.</p></div></section>
+<section><div class="eyebrow">RESULTS</div><h2>A tradeoff you can reproduce.</h2><div class="card"><table><thead><tr><th>Metric</th><th>Baseline</th><th>Fused candidate</th></tr></thead><tbody><tr><td>Simulated cycles / 16-tap output</td><td>@BASE_CYCLES@</td><td class="positive">@FUSED_CYCLES@</td></tr><tr><td>Equivalent outputs/s at assumed 50 MHz</td><td>@BASE_RATE@</td><td>@FUSED_RATE@</td></tr><tr><td>Mapped standard cells, local synthesis</td><td>@BASE_CELLS@</td><td>@FUSED_CELLS@</td></tr><tr><td>Mapped cell area, µm²</td><td>@BASE_AREA@</td><td>@FUSED_AREA@</td></tr><tr><td>Routed standard cells</td><td>@ROUTE_BASE_CELLS@</td><td>@ROUTE_FUSED_CELLS@</td></tr><tr><td>Routed standard-cell area, µm²</td><td>@ROUTE_BASE_AREA@</td><td>@ROUTE_FUSED_AREA@</td></tr><tr><td>Worst setup slack, ns</td><td>+@ROUTE_BASE_SETUP@</td><td>+@ROUTE_FUSED_SETUP@</td></tr><tr><td>Worst hold slack, ns</td><td>+@ROUTE_BASE_HOLD@</td><td>+@ROUTE_FUSED_HOLD@</td></tr><tr><td>Worst-corner transition violations</td><td>@ROUTE_BASE_SLEW@</td><td>@ROUTE_FUSED_SLEW@</td></tr></tbody></table><p class="caption">Local mapping adds @AREA_CHANGE@% cell area. Routed cell area adds @ROUTE_AREA_CHANGE@% under identical flow configuration, PDK and source commit. Both meet setup and hold across nine corners, with zero DRC, LVS and antenna errors and 15/15 prechecks. Transition violations remain. The candidate needs a separate waiver review before adoption.</p></div></section>
+<section class="two"><div class="card"><div class="eyebrow">VERIFICATION</div><h2>Prove the scope. Break the protections.</h2><ul class="muted"><li>Exhaustive signed multiplication and exact FIR references.</li><li>Both saturation rails, sticky overflow, byte reads and reset recovery.</li><li>Nine application tests and 100,000 operations pass on the hardened candidate.</li><li>Fused scheduling invariants pass BMC and induction, with reachable covers.</li><li>Old-B, missing-MAC and stuck-low busy mutants are caught.</li><li>A missing pending-reset mutant fails the control proof.</li></ul><p class="caption">Formal scope covers scheduling and selected handshake properties. Arithmetic equivalence and physical metastability are outside those proofs.</p><a href="../../docs/VERIFICATION_MATRIX.md">Requirements and proof boundaries →</a></div><div class="card evidence"><div class="eyebrow">EVIDENCE</div><h2>Inspect the engineering.</h2><a href="results.json">Application results and source hashes</a><a href="fir-results.csv">Captured input and output CSV</a><a href="synthesis/comparison.json">Synthesis comparison</a><a href="routed-comparison.json">Same-flow routed comparison and corner metrics</a><a href="../routed/37242546160/application/reports/dsp-demo/fused-gate.json">Hardened candidate application capture</a><a href="../sealed/29401092054/manifest.json">Historical raw-report manifest</a><a href="../sealed/29401092054/precheck/results.md">15 baseline prechecks</a><a href="../../docs/OPTIMIZATION.md">Optimization method and resume wording</a><p class="caption">Baseline raw metrics: @SEALED_CELLS@ cells, +@SETUP@ ns setup, +@HOLD@ ns hold. Max-transition exceptions remain documented in W1. Portal submission status is unverified.</p></div></section>
 <div class="footer">Generated from passing, source-matched artifacts. Simulation and synthesis results are labeled by stage. ASIC bring-up and measured system performance follow when hardware is available.</div>
 </main><script>
 const values={baseline:@BASE_CYCLES@,fused:@FUSED_CYCLES@};
@@ -161,6 +176,14 @@ for(const key of Object.keys(values))document.getElementById(key).setAttribute('
                     "HOLD": f"{sealed['hold_slack_ns']:.3f}"}
     for key, value in replacements.items():
         html = html.replace("@" + key + "@", value)
+    route_keys = {"CELLS": "standard_cells", "AREA": "cell_area_um2", "SETUP": "setup_slack_ns",
+                  "HOLD": "hold_slack_ns", "SLEW": "max_transition_violations"}
+    for variant, label in (("baseline", "BASE"), ("fused", "FUSED")):
+        for suffix, key in route_keys.items():
+            value = routed[variant][key]
+            formatted = str(value) if suffix in ("CELLS", "SLEW") else f"{value:,.3f}"
+            html = html.replace("@ROUTE_" + label + "_" + suffix + "@", formatted)
+    html = html.replace("@ROUTE_AREA_CHANGE@", f"{routed['cell_area_change_percent']:.2f}")
     (OUT / "index.html").write_text(html)
     print("Generated", OUT / "index.html")
 

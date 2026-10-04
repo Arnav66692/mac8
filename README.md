@@ -19,20 +19,24 @@ MAC8 now runs a host-controlled, 16-tap INT8 FIR filter through the actual
 pin interface. The driver, independent integer reference, captured samples,
 waveform and spectrum are included. A separately versioned fused-load/MAC
 candidate reduces execution from **364 to 252 simulated cycles per output**
-with **1.28% higher mapped cell area** under identical synthesis conditions.
+with **1.48% higher routed standard-cell area** under identical implementation conditions.
 
 | Evidence | Result | Scope |
 |---|---:|---|
 | Signed multiplication | All 65,536 operand pairs | RTL datapath simulation |
 | Application regressions | 9 tests per RTL variant | Pins, exact arithmetic, reset and busy |
 | Command soak | 100,000 operations per variant | Deterministic seeds, saturation and recovery |
-| FIR trace | 128 outputs, zero integer mismatches | Baseline and fused RTL |
+| FIR trace | 128 outputs, zero integer mismatches | RTL and candidate gate netlist |
+| Candidate gate regression | 9 tests, 100,000 scheduled operations | Fresh powered netlist |
+| Routed candidate | 1203 cells, +0.702 ns setup, +0.114 ns hold | Nine corners, transition exceptions remain |
 | Fused scheduling | BMC, induction and reachable covers pass | Control properties; arithmetic outside proof |
 | Fault injection | 3 application mutants and 1 formal mutant caught | Old B, missing MAC, busy and reset |
 
-[Open the interactive evidence page](reports/dsp-demo/index.html),
+[Open the portfolio](https://arnav66692.github.io/mac8/reports/dsp-demo/),
+[view it locally](reports/dsp-demo/index.html),
 [inspect the optimization](docs/OPTIMIZATION.md), or
 [run the board demo](docs/BRINGUP.md).
+[Submission package and candidate choice](docs/SUBMISSION.md) records what is ready and what needs a portal receipt.
 
 ![Pin-level FIR trace and spectrum](reports/dsp-demo/fir-results.png)
 
@@ -58,9 +62,9 @@ separate milestones.
 The baseline remains at spec v0.5. The fused candidate lives in
 `experiments/fused/` with its own module name and opcode contract; its
 workflow stages and hardens that version independently. The candidate
-is experimental until its routed timing, prechecks and gate-level
-application results are reviewed. W1 max-transition exceptions remain
-visible for the baseline.
+passes hardening, 15 prechecks and the gate-level application regression.
+It remains experimental because its 282 worst-corner transition violations
+require a separate review. Baseline W1 acceptance does not cover the candidate.
 
 ## The seal
 

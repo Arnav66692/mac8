@@ -62,3 +62,13 @@ with PDK_ROOT and the corresponding powered netlist in
 test/gate_level_netlist.v. Gate results are labeled functional simulation.
 The baseline's separately gated SDF flow remains its timing simulation
 authority. Candidate routed STA is required before any timing claim.
+
+## Fresh hardening evidence
+
+At source commit 9ac84c5, baseline run 37242546187 passes hardening, 15
+prechecks, its 14 functional and 14 annotated gate tests. Candidate run
+37242546160 passes hardening, 15 prechecks and all nine functional
+application tests including 100000 scheduled operations. Captures and
+source/netlist hashes are archived in reports/routed. Functional candidate
+simulation has no SDF annotation. Nine-corner STA supplies its timing
+results. Transition exceptions prevent a clean signoff claim.

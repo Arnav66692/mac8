@@ -1,0 +1,149 @@
+{
+  "run_id": 37242546187,
+  "run_url": "https://github.com/Arnav66692/mac8/actions/runs/37242546187",
+  "source_commit": "9ac84c5eb349cf04ce8d133a79f4d48aa719bc58",
+  "source_sha256": {
+    "src/mac8_datapath.sv": "c48399ba7790cb97bfc414149110de99cac78d02e4cd1ff32161040e2bc0f03e",
+    "src/mac8_ctrl.sv": "951a60e819926041b2bee73ef6f78ef9008fde3f6014d6e122fd3e504c548523",
+    "src/mac8_sync.sv": "eba4fbbc5869fc3f264b874d6285606ed620e6b747acb164681614963040622c",
+    "src/mac8_rst_sync.sv": "921dd388b3220a9808e09e2387176181104e1ed42b41bba0c0fd9043c2e59d9e",
+    "src/tt_um_arnav_mac8.sv": "9383b76c3babfabb872730a5ab4a9b6ddb5c0e8f4a2e83a3212fa9cbb1cd06c2"
+  },
+  "standard_cells": 1188,
+  "cell_area_um2": 10547.6,
+  "utilization": 0.639508,
+  "corners": {
+    "nom_tt_025C_1v80": {
+      "setup_slack_ns": 10.559125428448954,
+      "hold_slack_ns": 0.33869830121439526,
+      "transition_violations": 0
+    },
+    "nom_ss_100C_1v60": {
+      "setup_slack_ns": 1.7743140792159693,
+      "hold_slack_ns": 0.9528680336695126,
+      "transition_violations": 232
+    },
+    "nom_ff_n40C_1v95": {
+      "setup_slack_ns": 13.321797375632535,
+      "hold_slack_ns": 0.11247258998052558,
+      "transition_violations": 0
+    },
+    "min_tt_025C_1v80": {
+      "setup_slack_ns": 10.694840871174268,
+      "hold_slack_ns": 0.3358763917617452,
+      "transition_violations": 0
+    },
+    "min_ss_100C_1v60": {
+      "setup_slack_ns": 2.010773826580272,
+      "hold_slack_ns": 0.9458648576544162,
+      "transition_violations": 191
+    },
+    "min_ff_n40C_1v95": {
+      "setup_slack_ns": 13.37950588190624,
+      "hold_slack_ns": 0.1105767175789055,
+      "transition_violations": 0
+    },
+    "max_tt_025C_1v80": {
+      "setup_slack_ns": 10.435166803797717,
+      "hold_slack_ns": 0.3404359668305319,
+      "transition_violations": 33
+    },
+    "max_ss_100C_1v60": {
+      "setup_slack_ns": 1.555731587588994,
+      "hold_slack_ns": 0.9597940491822152,
+      "transition_violations": 254
+    },
+    "max_ff_n40C_1v95": {
+      "setup_slack_ns": 13.26975722419367,
+      "hold_slack_ns": 0.11371764962670415,
+      "transition_violations": 0
+    }
+  },
+  "setup_slack_ns": 1.555731587588994,
+  "hold_slack_ns": 0.1105767175789055,
+  "max_transition_violations": 254,
+  "max_capacitance_violations": 0,
+  "drc": 0,
+  "lvs": 0,
+  "antenna_nets": 0,
+  "prechecks_passed": 15,
+  "pdk": {
+    "FLOW_NAME": "LibreLane",
+    "FLOW_VERSION": "3.0.5",
+    "PDK": "sky130A",
+    "PDK_SOURCE": "open_pdks",
+    "PDK_VERSION": "8afc8346a57fe1ab7934ba5a6056ea8b43078e71"
+  },
+  "artifact_sha256": {
+    "nl": "5d41493182cd1ece30f2f4a2bdabdf5433400f7b508858161ea6f72db4f13fb0",
+    "pnl": "5c51d76c4ff2103fbcc8aa777b3421a104c778aa878cd2523203c0b89eac2d64",
+    "gds": "9fd32ffead58afc2c4dbfd61891c60661a991f7fd193a45bc84420a9c7360c55"
+  },
+  "files_sha256": {
+    "55-openroad-stapostpnr/config.json": "d17d64585946047958cc5f965e2f800f641b0bb6ed97aafea03269949211ad79",
+    "55-openroad-stapostpnr/max_ff_n40C_1v95/checks.rpt": "68b1414a4981803bea31886246715abc5ff22f3ca436c739460a48b8f2592dfa",
+    "55-openroad-stapostpnr/max_ff_n40C_1v95/tns.max.rpt": "76a5c15ea700725ae9635019a6ed2ca07f8d16855059a033824c06d80e376ffe",
+    "55-openroad-stapostpnr/max_ff_n40C_1v95/tns.min.rpt": "af5565e24e34574afef2b3450a406f96bd53b88ad55e3b6e6e3dbff8dedd2219",
+    "55-openroad-stapostpnr/max_ff_n40C_1v95/ws.max.rpt": "0e0a444a3547564b5a394236565ee3f59aa56ae7f2c1cd6e627e82d633cd0b04",
+    "55-openroad-stapostpnr/max_ff_n40C_1v95/ws.min.rpt": "151e4c769c855410ed7ef17011f2e8b30d78df4a36f5f9d3f15238e6c3576dc3",
+    "55-openroad-stapostpnr/max_ss_100C_1v60/checks.rpt": "a849ec97ba2881e0d99cc08a07462c796caf8a753489eca0cf135727ed6e99fd",
+    "55-openroad-stapostpnr/max_ss_100C_1v60/tns.max.rpt": "96969700a310391e17cecb00ab857ed8d0bdb72825a212e14f42c3e74629e7e6",
+    "55-openroad-stapostpnr/max_ss_100C_1v60/tns.min.rpt": "43631fe1f7fcc9c60ec0a22c6d28e4da03dd569319aeb2deaeffef9de76c51f6",
+    "55-openroad-stapostpnr/max_ss_100C_1v60/ws.max.rpt": "cb7dbbf50f40fc5c23e84c7c3201ab306046f5240d1285265c3915807a5d8a2f",
+    "55-openroad-stapostpnr/max_ss_100C_1v60/ws.min.rpt": "54ff708f8540dc5a5e1d471dc49ca7a288c9bad13222b1c36809ac9a21abe75b",
+    "55-openroad-stapostpnr/max_tt_025C_1v80/checks.rpt": "12fb61f29fe3e439814c50fe6117bc25bc399cd4c539a4eacf9a5f7923811f78",
+    "55-openroad-stapostpnr/max_tt_025C_1v80/tns.max.rpt": "418d2bede20e19a164a9f2ed3c09b9256673107c2b48cf89799c610ff1d7802d",
+    "55-openroad-stapostpnr/max_tt_025C_1v80/tns.min.rpt": "579c652f679fe33e8e5cfe4529e51f8736e0c2b82bb72e0994c4c9a8f4cb4bca",
+    "55-openroad-stapostpnr/max_tt_025C_1v80/ws.max.rpt": "8541cb7721a64a38413c9115a648819134d1cfdca0e7c7a7326f952fc0aa3f68",
+    "55-openroad-stapostpnr/max_tt_025C_1v80/ws.min.rpt": "4a24655b537915723fe14c3c989676a44756c60804431b0245b8158fd175a575",
+    "55-openroad-stapostpnr/min_ff_n40C_1v95/checks.rpt": "b004fa9e38eb6eeaf02f08eddf66b33bf85b5ccd3328eb078b8b5e25996eb60c",
+    "55-openroad-stapostpnr/min_ff_n40C_1v95/tns.max.rpt": "b048d22ca86dd0023ba3329e6564cee43717a28106510e57795e70fa246e9747",
+    "55-openroad-stapostpnr/min_ff_n40C_1v95/tns.min.rpt": "587f0c55fe0209a2d348fab9ff63c908110343280555acfa493a9971d66953ec",
+    "55-openroad-stapostpnr/min_ff_n40C_1v95/ws.max.rpt": "bbad493440690fea9174c46d9d56505367a0d9073b7f9d5a313a6da4522a30c6",
+    "55-openroad-stapostpnr/min_ff_n40C_1v95/ws.min.rpt": "ed388d530c728a316fbcfafa8a2de0bc0ad4fd46f02070f63a46617626f8cc9f",
+    "55-openroad-stapostpnr/min_ss_100C_1v60/checks.rpt": "23b015234aba3b99c1e0eb6d526ec1c87b25cd8a99e3d8261a7b40beb6329d64",
+    "55-openroad-stapostpnr/min_ss_100C_1v60/tns.max.rpt": "6f18a61253ea77b5afc13830c1748f07d9504986ffa6c49d0984e3f13b084e6f",
+    "55-openroad-stapostpnr/min_ss_100C_1v60/tns.min.rpt": "dba5c13a2470404ab1f7490957a18cca7d263df13784af820bd441fc120b8723",
+    "55-openroad-stapostpnr/min_ss_100C_1v60/ws.max.rpt": "83d9a85d22cdffa7eece3b707790d7d59ecc684b8fee746611e707cddb9d5e12",
+    "55-openroad-stapostpnr/min_ss_100C_1v60/ws.min.rpt": "9b72c483fa130d72ad7831056b05904733ce90e6f79cb3e4b4408615f55e4972",
+    "55-openroad-stapostpnr/min_tt_025C_1v80/checks.rpt": "aab9161e9cfb3641da6f969eb758cc33f823760a2930c13e37a29921974b54f7",
+    "55-openroad-stapostpnr/min_tt_025C_1v80/tns.max.rpt": "fe327ed65e8cc3db97fbffdef5c25ac618cc7bc5853637f6d838a35c6e42b2d8",
+    "55-openroad-stapostpnr/min_tt_025C_1v80/tns.min.rpt": "ee704a943991eb9741cf0b4b56c93a9776caeb605a3424f218bfd740142928da",
+    "55-openroad-stapostpnr/min_tt_025C_1v80/ws.max.rpt": "603d5be3d90824ee680227a5bb12a22e9e75cf8f666c99489a7e9a8e591ae60d",
+    "55-openroad-stapostpnr/min_tt_025C_1v80/ws.min.rpt": "c72212c79675d8221b5092a8646a77da9e1513ffe6e25a530d4c640bd7851b3a",
+    "55-openroad-stapostpnr/nom_ff_n40C_1v95/checks.rpt": "ec00db0516a143093c24385aeb186f3d96634f8c6cc44686d965db4a30b3c5c9",
+    "55-openroad-stapostpnr/nom_ff_n40C_1v95/tns.max.rpt": "c37e10d07dd2fce1c86cd3a72e12ddb782b51a5e6da96e5ed462f8439ce09c65",
+    "55-openroad-stapostpnr/nom_ff_n40C_1v95/tns.min.rpt": "d2e011159a09cb3e87fd0ad6ec8c4d96af619b1502ff25dc1d849e36c443fb50",
+    "55-openroad-stapostpnr/nom_ff_n40C_1v95/ws.max.rpt": "2e6aff38d49816bbc8d976b2b24d086feda85e249a24e1453d8e5d3e0a4d1d71",
+    "55-openroad-stapostpnr/nom_ff_n40C_1v95/ws.min.rpt": "f81148e9f02a3adea7a23debcb4e8e8d50b59574bee7ec824c87634d377fcdcc",
+    "55-openroad-stapostpnr/nom_ss_100C_1v60/checks.rpt": "e21730a23a3cbb52c08f4cfe9d6cbc735db7bb66afb15d0707c281ca0fe26837",
+    "55-openroad-stapostpnr/nom_ss_100C_1v60/tns.max.rpt": "e09d9bd64c68f75bb36c5e5fa0d7cbf3e37007f0fac36c077bc03c69a09095d3",
+    "55-openroad-stapostpnr/nom_ss_100C_1v60/tns.min.rpt": "37adb114f28a39b82a3f1e1c666a0e057b9f32c3482d1b5e28b8b34fb66c4532",
+    "55-openroad-stapostpnr/nom_ss_100C_1v60/ws.max.rpt": "1d1cb4e53cf925a2df19d8ef60f0125843ae6e81fe10a63e1fc4dd99aea65368",
+    "55-openroad-stapostpnr/nom_ss_100C_1v60/ws.min.rpt": "45163bee091c74c4ee2748c1c802852e16516f661471a684e4d758291b9bef2f",
+    "55-openroad-stapostpnr/nom_tt_025C_1v80/checks.rpt": "e36ed672598129a0bd7776047193865bc5dd9c1e2ad5c0adf4e8978dac991999",
+    "55-openroad-stapostpnr/nom_tt_025C_1v80/tns.max.rpt": "62292ca88994c259d36d136f6d66f4d1150930fb196adc8607d058e2e80b0abd",
+    "55-openroad-stapostpnr/nom_tt_025C_1v80/tns.min.rpt": "6a441470fbb28085daadd1a4c0455339db4f4d0377a8a5e373206f10247d2534",
+    "55-openroad-stapostpnr/nom_tt_025C_1v80/ws.max.rpt": "9f79bfad63bcc29dd8334c74b747ef041b09c7f68a57f2e7c5cd870d83239fc7",
+    "55-openroad-stapostpnr/nom_tt_025C_1v80/ws.min.rpt": "2642e283e212bd72c4aeb0ef70cb80e95f3baed80a9a3b08a1fa9f0540e23b24",
+    "55-openroad-stapostpnr/summary.rpt": "aec7fd2f09e738f35ca25fc219e30d404934d17fda2c388c6d1f4aa7aa8bda41",
+    "ci.json": "e1f27d103003a69d639058ec0b60427b396d1bd4d4a1f2c48da8e088bec53236",
+    "final/commit_id.json": "03554ffe9f48d10d87a3255f1e849e64d419b8b0283d416278fd1cde129523cc",
+    "final/gds/tt_um_arnav_mac8.gds": "9fd32ffead58afc2c4dbfd61891c60661a991f7fd193a45bc84420a9c7360c55",
+    "final/metrics.json": "2269bead76b9c7da62e65df2f89413edbaf133966f0d7cb70ef841138e36fa79",
+    "final/nl/tt_um_arnav_mac8.nl.v": "5d41493182cd1ece30f2f4a2bdabdf5433400f7b508858161ea6f72db4f13fb0",
+    "final/pnl/tt_um_arnav_mac8.pnl.v": "5c51d76c4ff2103fbcc8aa777b3421a104c778aa878cd2523203c0b89eac2d64",
+    "final/sdc/tt_um_arnav_mac8.sdc": "c944af5ad6ee8b7b1b26c0d3f8845defcf836654d77db2de984a7f601e92b7eb",
+    "final/sdf/max_ss_100C_1v60/tt_um_arnav_mac8__max_ss_100C_1v60.sdf": "8606d894ff3bd5081480f4147f608adbd1168d69ee1d9b92293167b9de73a089",
+    "pdk.json": "1511c935a0afe4cdc9b9d81e450da0d382a2d99c1ce1795634597b8a34589cf6",
+    "precheck/drc_beol.xml": "ae412521236e25f107d9297ecc47abbd828f337bd9f574e597ae579a0ccab0fc",
+    "precheck/drc_feol.xml": "0483f33b38336a81d0c41cc47755a6d6a3c8f2b6dcf23c1437675038eed26219",
+    "precheck/drc_nwell_urpm.xml": "915091852d072d90515e80c7f95659e4cf18b6166dbebea4692921ba0fc46f23",
+    "precheck/drc_offgrid.xml": "f9b16fb40956f62bd6dfadca49dca3e32f035c6deefc8604dc55e6e67717aef3",
+    "precheck/drc_pin_label_purposes_overlapping_drawing.xml": "979a67744bc903f1cc56c93ac2e1b6940c09b3938b3423f8843d26aee460733d",
+    "precheck/drc_zero_area.xml": "54c741414a2101605ffdd3e69395f45db66ee4db0c850695cfb1a107dc2eca8e",
+    "precheck/magic_drc.txt": "ddfeb8247169c8ef461950cc22dfd316bbe8bf205a081c54279d92a03b5b1f6a",
+    "precheck/results.md": "8ab1c8bc31ac259f4b23800945c005507f2bfa5377d84d4f7b2465d9d1aa7f87",
+    "precheck/results.xml": "0924c8d5d967a6ea12353b3dad979ef5949f285e05fdd444c4bd9f3e7d767de5"
+  }
+}

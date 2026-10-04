@@ -1,0 +1,14 @@
+<testsuites name="results">
+  <testsuite name="all" package="all">
+    <property name="random_seed" value="1791155535" />
+    <testcase name="test_signed_vectors_and_new_b" classname="test_app" file="/home/runner/work/mac8/mac8/verification/test_app.py" lineno="69" time="0.02108597755432129" sim_time_ns="4480.0" ratio_time="212463.47191913254" />
+    <testcase name="test_fir_impulse_step_and_alternation" classname="test_app" file="/home/runner/work/mac8/mac8/verification/test_app.py" lineno="77" time="1.2313039302825928" sim_time_ns="302680.0" ratio_time="245820.7048283626" />
+    <testcase name="test_saturation_sticky_and_clear" classname="test_app" file="/home/runner/work/mac8/mac8/verification/test_app.py" lineno="84" time="1.0674097537994385" sim_time_ns="292040.0" ratio_time="273596.9003098252" />
+    <testcase name="test_reset_recovery" classname="test_app" file="/home/runner/work/mac8/mac8/verification/test_app.py" lineno="97" time="0.010242938995361328" sim_time_ns="2660.0" ratio_time="259691.09073134398" />
+    <testcase name="test_command_hold_and_read_margin" classname="test_app" file="/home/runner/work/mac8/mac8/verification/test_app.py" lineno="106" time="0.01748180389404297" sim_time_ns="3960.0" ratio_time="226521.2459767607" />
+    <testcase name="test_random_vectors" classname="test_app" file="/home/runner/work/mac8/mac8/verification/test_app.py" lineno="117" time="0.9416754245758057" sim_time_ns="171920.0" ratio_time="182568.2135407159" />
+    <testcase name="test_busy_pin_contract" classname="test_app" file="/home/runner/work/mac8/mac8/verification/test_app.py" lineno="127" time="0.00601506233215332" sim_time_ns="1175.0" ratio_time="195342.946609061" />
+    <testcase name="test_fir_demo_and_cycle_measurement" classname="test_app" file="/home/runner/work/mac8/mac8/verification/test_app.py" lineno="144" time="2.914147138595581" sim_time_ns="645400.0" ratio_time="221471.31538150078" />
+    <testcase name="test_seeded_command_soak" classname="test_app" file="/home/runner/work/mac8/mac8/verification/test_app.py" lineno="175" time="61.69220519065857" sim_time_ns="15896580.000000002" ratio_time="257675.6650353465" />
+  </testsuite>
+</testsuites>
