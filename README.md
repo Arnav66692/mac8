@@ -1,42 +1,31 @@
 # MAC8
 
-An int8 serial multiply accumulate unit for the Tiny Tapeout TTSKY26c
-shuttle, sky130. 8 bit signed times 8 bit signed, accumulated into 24 bit
-signed with saturation and a sticky overflow flag. One multiplier, one
-accumulator, one command decoder. The atom of AI compute, small enough to
-tape out, deep enough to defend line by line.
+**An int8 multiply-accumulate unit for AI compute, designed from RTL to GDS on the SkyWater 130 nm process with open-source tools.**
 
-Built RTL to GDS on open tools, SystemVerilog, cocotb, Icarus, Verilator,
-LibreLane through the Tiny Tapeout flow. Results are labeled by simulation, synthesis or physical-design stage.
+[Interactive portfolio](https://arnav66692.github.io/mac8/reports/dsp-demo/) · [Design spec](docs/SPEC.md) · [Verification matrix](docs/VERIFICATION_MATRIX.md) · [Optimization study](docs/OPTIMIZATION.md)
 
-Implementation was agent assisted. The design decisions, the review
-rulings, the verification strategy, and the adversarial audits are owned by
-me.
+![MAC8 layout](docs/images/mac8-isometric.png)
 
-## DSP application and optimization
+## Overview
 
-MAC8 now runs a host-controlled, 16-tap INT8 FIR filter through the actual
-pin interface. The driver, independent integer reference, captured samples,
-waveform and spectrum are included. A separately versioned fused-load/MAC
-candidate reduces execution from **364 to 252 simulated cycles per output**
-with **1.48% higher routed standard-cell area** under identical implementation conditions.
+MAC8 multiplies two 8-bit signed numbers and adds the result into a 24-bit signed accumulator, with saturation and a sticky overflow flag. A multiply-accumulate is the basic operation inside every neural network, and MAC8 is a complete, verified version of it that fits in one Tiny Tapeout tile.
 
-| Evidence | Result | Scope |
+- **Design:** one multiplier, one accumulator and one command decoder in SystemVerilog, driven over an 8-bit operand bus with synchronized commands.
+- **Flow:** RTL to GDS through the Tiny Tapeout flow on sky130, using cocotb, Icarus, Verilator, Yosys and LibreLane.
+- **Application:** runs a host-controlled 16-tap INT8 FIR filter through the real pin interface.
+
+## Results
+
+| Area | Result | Scope |
 |---|---:|---|
-| Signed multiplication | All 65,536 operand pairs | RTL datapath simulation |
-| Application regressions | 9 tests per RTL variant | Pins, exact arithmetic, reset and busy |
+| Signed multiplication | All 65,536 operand pairs correct | RTL datapath simulation |
 | Command soak | 100,000 operations per variant | Deterministic seeds, saturation and recovery |
-| FIR trace | 128 outputs, zero integer mismatches | RTL and candidate gate netlist |
-| Candidate gate regression | 9 tests, 100,000 scheduled operations | Fresh powered netlist |
-| Routed candidate | 1203 cells, +0.702 ns setup, +0.114 ns hold | Nine corners, transition exceptions remain |
-| Fused scheduling | BMC, induction and reachable covers pass | Control properties; arithmetic outside proof |
-| Fault injection | 3 application mutants and 1 formal mutant caught | Old B, missing MAC, busy and reset |
-
-[Open the portfolio](https://arnav66692.github.io/mac8/reports/dsp-demo/),
-[view it locally](reports/dsp-demo/index.html),
-[inspect the optimization](docs/OPTIMIZATION.md), or
-[run the board demo](docs/BRINGUP.md).
-[Submission package and candidate choice](docs/SUBMISSION.md) records what is ready and what needs a portal receipt.
+| FIR filter | 128 outputs, zero integer mismatches | RTL and gate-level netlist |
+| Physical design | 1,188 cells, DRC, LVS and antenna all 0 | Hardened layout, one tile |
+| Timing | +1.556 ns setup at 50 MHz, hold met at all nine corners | OpenSTA |
+| Tiny Tapeout prechecks | 15 of 15 passing | CI |
+| Formal | Handshake proven unbounded, BMC 60, induction at step 30 | yosys-smtbmc with z3 |
+| Optimization | Fused load and MAC: 364 to 252 cycles per output, +1.48% area | Routed comparison |
 
 ![Pin-level FIR trace and spectrum](reports/dsp-demo/fir-results.png)
 
@@ -50,23 +39,13 @@ flowchart LR
     A --> F[Sticky overflow]
 ```
 
-## Implementation and submission status
+## Status
 
-The baseline has a successful historical SKY130 hardening build and
-15 passing Tiny Tapeout prechecks. The archived raw reports below establish
-that implementation result. **Portal submission, payment and allocation
-are unverified** because this repository does not contain a confirmed
-project ID, revision and receipt. Fabrication and physical bring-up are
-separate milestones.
+The design is hardened to GDS and passes all Tiny Tapeout prechecks. It has not been fabricated. The fused-MAC version in `experiments/fused/` is an experimental variant with its own module name and opcode contract, kept separate from the baseline.
 
-The baseline remains at spec v0.5. The fused candidate lives in
-`experiments/fused/` with its own module name and opcode contract; its
-workflow stages and hardens that version independently. The candidate
-passes hardening, 15 prechecks and the gate-level application regression.
-It remains experimental because its 282 worst-corner transition violations
-require a separate review. Baseline W1 acceptance does not cover the candidate.
+AI helped implement and write the code to increase productivity.
 
-## The seal
+## Build provenance
 
 The historical physical-design numbers here cite one netlist and its sha256.
 The waiver, the datasheet, and this README describe that sealed package from
@@ -79,7 +58,7 @@ outside it, they are documentation, not new state.
 | Raw reports | [Hash manifest](reports/sealed/29401092054/manifest.json), [successful CI run](https://github.com/Arnav66692/mac8/actions/runs/29401092054) |
 | Netlist sha256, the one hash | 5d41493182cd1ece30f2f4a2bdabdf5433400f7b508858161ea6f72db4f13fb0 |
 
-## Historical baseline physical-design results
+## Physical design details
 
 | Number | Value |
 |---|---|
@@ -90,9 +69,9 @@ outside it, they are documentation, not new state.
 | DRC, LVS, antenna | 0, 0, 0 |
 | Tests | 9 datapath plus 14 protocol white box RTL, 14 pin only gate level, all green |
 | Formal | handshake proven unbounded, yosys smtbmc with z3, BMC 60, induction closes at step 30, mutation gated, formal/README.md |
-| Metastability MTBF bound | Conditional estimate using the extraction assumptions in [CDC_MTBF.md](docs/CDC_MTBF.md); not a measured silicon failure rate |
+| Metastability MTBF bound | Conditional estimate using the extraction assumptions in [CDC_MTBF.md](docs/CDC_MTBF.md), not a measured silicon failure rate |
 
-## The two waived warts
+## Timing waivers
 
 One waiver, W1, two classes of the same max transition finding,
 docs/WAIVERS.md.
@@ -156,7 +135,7 @@ The application suites each include the full 100,000-operation soak.
 [Verification matrix](docs/VERIFICATION_MATRIX.md) records the requirements,
 seeds, proof assumptions and remaining hardware measurements. Local report
 rendering requires numpy, matplotlib, a SKY130 Liberty synthesis run and the
-archived reports; see [OPTIMIZATION.md](docs/OPTIMIZATION.md).
+archived reports, see [OPTIMIZATION.md](docs/OPTIMIZATION.md).
 
 ## How to test the baseline
 
@@ -196,7 +175,7 @@ bash formal/mutation_test.sh 60
 The full BMC and unbounded induction recipe, the four properties, and the
 mutation table are in formal/README.md.
 
-## The verification story
+## Verification approach
 
 Adversarial review with mutation testing is the primary gate, and it caught
 what the green suites could not. An exact rail saturation gap, a reset
